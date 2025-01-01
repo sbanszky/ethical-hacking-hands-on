@@ -20,6 +20,7 @@ const UserManagement = () => {
   }, []);
 
   const fetchProfiles = async () => {
+    console.log("Fetching profiles with emails...");
     // Join profiles with auth.users to get emails
     const { data, error } = await supabase
       .from("profiles")
@@ -35,6 +36,7 @@ const UserManagement = () => {
       return;
     }
 
+    console.log("Fetched profiles:", data);
     // Transform the data to match our Profile interface
     const transformedData = data.map((profile: any) => ({
       ...profile,
