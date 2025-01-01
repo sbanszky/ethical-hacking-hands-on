@@ -1,13 +1,11 @@
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import MenuForm from "@/components/dashboard/MenuForm";
-import PageForm from "@/components/dashboard/PageForm";
-import UserManagement from "@/components/dashboard/UserManagement";
+import { useNavigate } from "react-router-dom";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
 import { useContent } from "@/hooks/useContent";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import UserManagement from "@/components/dashboard/UserManagement";
+import ContentManager from "@/components/dashboard/ContentManager";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -92,61 +90,14 @@ const Dashboard = () => {
         {userRole === "admin" && <UserManagement />}
         
         {canManageContent && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-gray-800 p-6 rounded-lg">
-              <h2 className="text-xl font-semibold mb-4">Manage Menus</h2>
-              <MenuForm onMenuCreated={fetchMenus} />
-              <div className="space-y-2 mt-4">
-                {menus && menus.length > 0 ? (
-                  menus.map((menu: any) => (
-                    <div key={menu.id} className="flex items-center justify-between p-3 bg-gray-700 rounded">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{menu.title}</span>
-                        <span className="text-sm text-gray-400">{menu.parent_category}</span>
-                      </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteMenu(menu.id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-400 text-center py-4">No menus created yet</p>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-gray-800 p-6 rounded-lg">
-              <h2 className="text-xl font-semibold mb-4">Manage Pages</h2>
-              <PageForm menus={menus} onPageCreated={fetchPages} />
-              <div className="space-y-2 mt-4">
-                {pages && pages.length > 0 ? (
-                  pages.map((page: any) => (
-                    <div key={page.id} className="flex items-center justify-between p-3 bg-gray-700 rounded">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{page.title}</span>
-                        <span className="text-sm text-gray-400">
-                          {menus.find((m: any) => m.id === page.menu_id)?.title || 'No menu'}
-                        </span>
-                      </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeletePage(page.id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-400 text-center py-4">No pages created yet</p>
-                )}
-              </div>
-            </div>
-          </div>
+          <ContentManager
+            menus={menus}
+            pages={pages}
+            onMenuCreated={fetchMenus}
+            onPageCreated={fetchPages}
+            onDeleteMenu={handleDeleteMenu}
+            onDeletePage={handleDeletePage}
+          />
         )}
       </div>
     </div>
