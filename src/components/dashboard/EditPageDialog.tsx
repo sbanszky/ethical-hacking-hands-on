@@ -15,7 +15,7 @@ type Page = Database['public']['Tables']['pages']['Row'];
 interface EditPageDialogProps {
   page: Page;
   menus: Menu[];
-  onPageUpdated: () => void;
+  onPageUpdated: (pages: Page[]) => void;
 }
 
 const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => {
@@ -57,9 +57,21 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
       return;
     }
 
+    // Fetch updated pages to pass to the callback
+    const { data: updatedPages, error: fetchError } = await supabase
+      .from("pages")
+      .select("*")
+      .order("order_index");
+
+    if (fetchError) {
+      console.error("Error fetching updated pages:", fetchError);
+      toast.error("Error fetching updated pages");
+      return;
+    }
+
     toast.success("Page updated successfully");
     setOpen(false);
-    onPageUpdated();
+    onPageUpdated(updatedPages);
   };
 
   return (

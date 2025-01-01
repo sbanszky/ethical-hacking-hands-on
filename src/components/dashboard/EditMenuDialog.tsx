@@ -18,7 +18,7 @@ const PARENT_CATEGORIES = [
 
 interface EditMenuDialogProps {
   menu: Menu;
-  onMenuUpdated: () => void;
+  onMenuUpdated: (menus: Menu[]) => void;
 }
 
 const EditMenuDialog = ({ menu, onMenuUpdated }: EditMenuDialogProps) => {
@@ -58,9 +58,21 @@ const EditMenuDialog = ({ menu, onMenuUpdated }: EditMenuDialogProps) => {
       return;
     }
 
+    // Fetch updated menus to pass to the callback
+    const { data: updatedMenus, error: fetchError } = await supabase
+      .from("menus")
+      .select("*")
+      .order("order_index");
+
+    if (fetchError) {
+      console.error("Error fetching updated menus:", fetchError);
+      toast.error("Error fetching updated menus");
+      return;
+    }
+
     toast.success("Menu updated successfully");
     setOpen(false);
-    onMenuUpdated();
+    onMenuUpdated(updatedMenus);
   };
 
   return (
