@@ -65,9 +65,12 @@ const ImageUploadButton = ({ onImageUploaded }: ImageUploadButtonProps) => {
           variant="secondary"
           size="sm"
           className="cursor-pointer"
+          asChild
         >
-          <ImagePlus className="h-4 w-4 mr-2" />
-          Add Image
+          <span>
+            <ImagePlus className="h-4 w-4 mr-2" />
+            Add Image
+          </span>
         </Button>
       </label>
     </div>
