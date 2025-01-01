@@ -1,13 +1,16 @@
 import { useParams, Link } from "react-router-dom";
 import { useContent } from "@/hooks/useContent";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MarkedSection } from "@/types/marked-sections";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const Page = () => {
   const { slug } = useParams();
   const { pages, isLoading } = useContent();
+  const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
   
   console.log("Page component - Current slug:", slug);
   console.log("Page component - Available pages:", pages);
@@ -37,6 +40,56 @@ const Page = () => {
     );
   }
 
+  const handleCopySection = async (content: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedStates({ ...copiedStates, [index]: true });
+      toast.success("Code copied to clipboard");
+      setTimeout(() => {
+        setCopiedStates({ ...copiedStates, [index]: false });
+      }, 2000);
+    } catch (err) {
+      toast.error("Failed to copy code");
+    }
+  };
+
+  const renderMarkedSections = () => {
+    const markedSections = page.marked_sections as unknown as MarkedSection[];
+    if (!Array.isArray(markedSections) || markedSections.length === 0) return null;
+
+    return (
+      <div className="space-y-4 mt-4">
+        {markedSections.map((section, index) => (
+          <div key={index} className="relative bg-gray-900 border border-gray-700 p-4 rounded-lg">
+            <pre className="text-gray-300 whitespace-pre-wrap font-mono text-sm">
+              <code>{section.content}</code>
+            </pre>
+            <div className="absolute top-2 right-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="h-8 px-3"
+                onClick={() => handleCopySection(section.content, index)}
+              >
+                {copiedStates[index] ? (
+                  <>
+                    <Check className="h-4 w-4 mr-1" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4 mr-1" />
+                    Copy
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen pt-20 px-4">
       <div className="max-w-4xl mx-auto">
@@ -56,23 +109,8 @@ const Page = () => {
             <div className="p-6">
               <div className="mt-4 bg-gray-900 p-6 rounded-lg">
                 <div className="prose prose-invert max-w-none">
-                  {Array.isArray(page.marked_sections) && (page.marked_sections as unknown as MarkedSection[]).length > 0 ? (
-                    <div className="text-white">
-                      {page.content.split('').map((char, index) => {
-                        const markedSections = (page.marked_sections as unknown as MarkedSection[]) || [];
-                        const isInMarkedSection = markedSections.some(
-                          section => index >= section.start && index < section.end
-                        );
-                        return isInMarkedSection ? (
-                          <span key={index} className="bg-gray-700 font-mono">
-                            {char}
-                          </span>
-                        ) : char;
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-white whitespace-pre-wrap">{page.content}</div>
-                  )}
+                  <div className="text-white whitespace-pre-wrap">{page.content}</div>
+                  {renderMarkedSections()}
                 </div>
               </div>
             </div>
