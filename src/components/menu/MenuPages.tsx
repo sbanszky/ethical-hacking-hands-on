@@ -69,7 +69,7 @@ const MenuPages = () => {
                   </Link>
                   {page.content && (
                     <div className="mt-4 bg-gray-900 p-6 rounded-lg">
-                      <div className="prose prose-invert max-w-none prose-p:text-gray-300">
+                      <div className="prose prose-invert max-w-none text-gray-200">
                         {Array.isArray(page.marked_sections) && (page.marked_sections as unknown as MarkedSection[]).length > 0 ? (
                           <div>
                             {page.content.split('').map((char, index) => {
