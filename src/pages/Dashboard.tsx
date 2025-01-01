@@ -12,37 +12,92 @@ const Dashboard = () => {
   const [menus, setMenus] = useState([]);
   const [pages, setPages] = useState([]);
   const [userRole, setUserRole] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Session check:", session);
+        
+        if (!session) {
+          console.log("No session found, redirecting to login");
+          navigate("/login");
+          return;
+        }
+
+        // Fetch user profile with maybeSingle instead of single
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .maybeSingle();
+
+        console.log("Profile fetch result:", { profile, profileError });
+
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          toast.error("Error fetching user role");
+          return;
+        }
+
+        // If no profile exists, create one with default role
+        if (!profile) {
+          console.log("No profile found, creating new profile");
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert([
+              { 
+                id: session.user.id,
+                role: 'reader' // Default role
+              }
+            ]);
+
+          if (insertError) {
+            console.error("Error creating profile:", insertError);
+            toast.error("Error creating user profile");
+            return;
+          }
+
+          setUserRole('reader');
+        } else {
+          setUserRole(profile.role);
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Authentication check error:", error);
+        toast.error("Error checking authentication");
         navigate("/login");
-        return;
       }
-
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .single();
-
-      if (error) {
-        toast.error("Error fetching user role");
-        return;
-      }
-
-      setUserRole(profile.role);
     };
 
     checkAuth();
-    fetchMenus();
-    fetchPages();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session);
+      if (!session) {
+        navigate("/login");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      fetchMenus();
+      fetchPages();
+    }
+  }, [isLoading]);
 
   const fetchMenus = async () => {
     const { data, error } = await supabase.from("menus").select("*").order("order_index");
     if (error) {
+      console.error("Error fetching menus:", error);
       toast.error("Error fetching menus");
       return;
     }
@@ -52,6 +107,7 @@ const Dashboard = () => {
   const fetchPages = async () => {
     const { data, error } = await supabase.from("pages").select("*").order("order_index");
     if (error) {
+      console.error("Error fetching pages:", error);
       toast.error("Error fetching pages");
       return;
     }
@@ -65,6 +121,7 @@ const Dashboard = () => {
       .eq("id", menuId);
     
     if (error) {
+      console.error("Error deleting menu:", error);
       toast.error("Error deleting menu");
       return;
     }
@@ -80,6 +137,7 @@ const Dashboard = () => {
       .eq("id", pageId);
     
     if (error) {
+      console.error("Error deleting page:", error);
       toast.error("Error deleting page");
       return;
     }
@@ -88,6 +146,16 @@ const Dashboard = () => {
     fetchPages();
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pt-20 bg-hack-background text-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   const canManageContent = userRole === "admin" || userRole === "editor";
 
   return (
@@ -95,7 +163,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
         
-        <UserManagement />
+        {userRole === "admin" && <UserManagement />}
         
         {canManageContent && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
