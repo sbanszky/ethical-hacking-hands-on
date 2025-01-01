@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import UserManagement from "@/components/dashboard/UserManagement";
 import ContentManager from "@/components/dashboard/ContentManager";
+import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -21,17 +22,17 @@ const Dashboard = () => {
   } = useContent();
 
   useEffect(() => {
-    console.log("Dashboard mounting, current user role:", userRole);
+    console.log("Dashboard: Mounting, current user role:", userRole);
     
     if (!isAuthLoading && !userRole) {
-      console.log("No user role found, redirecting to login");
+      console.log("Dashboard: No user role found, redirecting to login");
       navigate("/login");
       return;
     }
 
     const loadContent = async () => {
       if (!isAuthLoading && userRole) {
-        console.log("Loading content for user with role:", userRole);
+        console.log("Dashboard: Loading content for user with role:", userRole);
         await Promise.all([fetchMenus(), fetchPages()]);
       }
     };
@@ -39,8 +40,8 @@ const Dashboard = () => {
     loadContent();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed in Dashboard:", event);
-      if (event === 'SIGNED_OUT' || !session) {
+      console.log("Dashboard: Auth state changed:", event);
+      if (event === "SIGNED_OUT" || !session) {
         toast.info("Session ended. Please log in again.");
         navigate("/login");
       }
@@ -56,7 +57,7 @@ const Dashboard = () => {
       <div className="min-h-screen pt-20 bg-hack-background text-white">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-center min-h-[60vh]">
           <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hack-accent mx-auto"></div>
+            <Loader2 className="h-12 w-12 animate-spin text-hack-accent mx-auto" />
             <p className="text-hack-accent">Checking authentication...</p>
           </div>
         </div>
@@ -69,7 +70,7 @@ const Dashboard = () => {
       <div className="min-h-screen pt-20 bg-hack-background text-white">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-center min-h-[60vh]">
           <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hack-accent mx-auto"></div>
+            <Loader2 className="h-12 w-12 animate-spin text-hack-accent mx-auto" />
             <p className="text-hack-accent">Loading content...</p>
           </div>
         </div>

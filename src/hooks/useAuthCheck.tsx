@@ -10,30 +10,33 @@ export const useAuthCheck = () => {
 
   useEffect(() => {
     let mounted = true;
+    console.log("useAuthCheck: Starting authentication check...");
 
     const checkAuth = async () => {
       try {
-        console.log("Starting auth check...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (!mounted) return;
+        if (!mounted) {
+          console.log("useAuthCheck: Component unmounted, stopping auth check");
+          return;
+        }
 
         if (sessionError) {
-          console.error("Session error:", sessionError);
-          toast.error("Authentication error. Please log in again.");
+          console.error("useAuthCheck: Session error:", sessionError);
+          toast.error("Authentication error occurred");
           setIsLoading(false);
           navigate("/login");
           return;
         }
 
         if (!session) {
-          console.log("No session found, redirecting to login");
+          console.log("useAuthCheck: No session found, redirecting to login");
           setIsLoading(false);
           navigate("/login");
           return;
         }
 
-        console.log("Session found, checking profile for user:", session.user.id);
+        console.log("useAuthCheck: Session found, checking profile...");
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role, username")
@@ -43,25 +46,25 @@ export const useAuthCheck = () => {
         if (!mounted) return;
 
         if (profileError) {
-          console.error("Profile fetch error:", profileError);
-          if (profileError.code === 'PGRST116') {
-            console.log("Profile doesn't exist, creating new profile");
+          console.error("useAuthCheck: Profile error:", profileError);
+          if (profileError.code === "PGRST116") {
+            console.log("useAuthCheck: Creating new profile...");
             const { error: insertError } = await supabase
               .from("profiles")
-              .insert([{ 
+              .insert([{
                 id: session.user.id,
-                role: 'reader',
+                role: "reader",
                 email: session.user.email
               }]);
 
             if (insertError) {
-              console.error("Error creating profile:", insertError);
+              console.error("useAuthCheck: Profile creation error:", insertError);
               toast.error("Error creating user profile");
               setIsLoading(false);
               return;
             }
 
-            setUserRole('reader');
+            setUserRole("reader");
             setIsLoading(false);
             navigate("/username-setup");
             return;
@@ -73,20 +76,20 @@ export const useAuthCheck = () => {
         }
 
         if (!profile.username) {
-          console.log("Profile found but no username, redirecting to setup");
+          console.log("useAuthCheck: No username set, redirecting to setup");
           setUserRole(profile.role);
           setIsLoading(false);
           navigate("/username-setup");
           return;
         }
 
-        console.log("Profile complete, setting role:", profile.role);
+        console.log("useAuthCheck: Profile complete, role:", profile.role);
         setUserRole(profile.role);
         setIsLoading(false);
       } catch (error) {
-        console.error("Authentication check error:", error);
-        toast.error("Error checking authentication");
+        console.error("useAuthCheck: Unexpected error:", error);
         if (mounted) {
+          toast.error("An unexpected error occurred");
           setIsLoading(false);
           navigate("/login");
         }
@@ -98,25 +101,25 @@ export const useAuthCheck = () => {
     
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
+      console.log("useAuthCheck: Auth state changed:", event);
       
       if (!mounted) return;
 
-      if (event === 'SIGNED_OUT' || !session) {
-        console.log("User signed out or session ended");
+      if (event === "SIGNED_OUT" || !session) {
+        console.log("useAuthCheck: User signed out or session ended");
         setUserRole("");
         setIsLoading(false);
         navigate("/login");
         return;
       }
 
-      if (event === 'SIGNED_IN') {
-        console.log("User signed in, checking auth...");
+      if (event === "SIGNED_IN") {
+        console.log("useAuthCheck: User signed in, checking auth...");
+        setIsLoading(true);
         await checkAuth();
       }
     });
 
-    // Cleanup function
     return () => {
       mounted = false;
       subscription.unsubscribe();
