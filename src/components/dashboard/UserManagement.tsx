@@ -17,12 +17,7 @@ const UserManagement = () => {
     console.log("Fetching profiles...");
     const { data: profilesData, error: profilesError } = await supabase
       .from("profiles")
-      .select(`
-        *,
-        user:id(
-          email
-        )
-      `)
+      .select("*")
       .order("created_at");
 
     if (profilesError) {
@@ -37,8 +32,28 @@ const UserManagement = () => {
       return;
     }
 
-    console.log("Fetched profiles:", profilesData);
-    setProfiles(profilesData as Profile[]);
+    // Fetch emails separately since we can't join with auth.users
+    const userEmails = new Map<string, string>();
+    const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
+    
+    if (userError) {
+      console.error("Error fetching user emails:", userError);
+    } else if (userData) {
+      userData.users.forEach(user => {
+        userEmails.set(user.id, user.email || "No email available");
+      });
+    }
+
+    // Combine profile data with emails
+    const profilesWithEmails = profilesData.map(profile => ({
+      ...profile,
+      user: {
+        email: userEmails.get(profile.id) || "No email available"
+      }
+    }));
+
+    console.log("Fetched profiles with emails:", profilesWithEmails);
+    setProfiles(profilesWithEmails);
   };
 
   if (currentUserRole !== "admin") {
