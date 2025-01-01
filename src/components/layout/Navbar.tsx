@@ -72,7 +72,19 @@ const Navbar = () => {
                     {item.title}
                   </Button>
                   {item.menus.length > 0 && (
-                    <div className="absolute left-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg hidden group-hover:block">
+                    <div 
+                      className="absolute left-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out"
+                      onMouseEnter={(e) => {
+                        const target = e.currentTarget;
+                        target.style.opacity = "1";
+                        target.style.visibility = "visible";
+                      }}
+                      onMouseLeave={(e) => {
+                        const target = e.currentTarget;
+                        target.style.opacity = "0";
+                        target.style.visibility = "hidden";
+                      }}
+                    >
                       {item.menus.map((menu) => (
                         <Button
                           key={menu.id}

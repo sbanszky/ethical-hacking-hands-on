@@ -32,6 +32,8 @@ const PageForm = ({
 
   const handleCreatePage = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Creating new page with data:", newPage);
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error("You must be logged in to create a page");
@@ -74,6 +76,7 @@ const PageForm = ({
 
   console.log("Selected parent category:", newPage.parent_category);
   console.log("Available menus for category:", filteredMenus);
+  console.log("All menus:", menus);
 
   return (
     <form onSubmit={handleCreatePage} className="mb-6 space-y-4">
@@ -99,15 +102,15 @@ const PageForm = ({
         <SelectTrigger className="bg-gray-700">
           <SelectValue placeholder="Select Parent Category" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-gray-800 border-gray-700">
           {PARENT_CATEGORIES.map((category) => (
-            <SelectItem key={category.id} value={category.id}>
+            <SelectItem key={category.id} value={category.id} className="text-white hover:bg-gray-700">
               {category.title}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      {newPage.parent_category && filteredMenus.length > 0 && (
+      {newPage.parent_category && (
         <Select
           value={newPage.menu_id}
           onValueChange={(value) => setNewPage({ ...newPage, menu_id: value })}
@@ -115,9 +118,9 @@ const PageForm = ({
           <SelectTrigger className="bg-gray-700">
             <SelectValue placeholder="Select Menu" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-gray-800 border-gray-700">
             {filteredMenus.map((menu) => (
-              <SelectItem key={menu.id} value={menu.id}>
+              <SelectItem key={menu.id} value={menu.id} className="text-white hover:bg-gray-700">
                 {menu.title}
               </SelectItem>
             ))}
