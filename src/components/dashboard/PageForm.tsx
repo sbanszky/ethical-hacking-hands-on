@@ -70,9 +70,10 @@ const PageForm = ({
   };
 
   // Filter menus based on selected parent category
-  const filteredMenus = menus.filter(menu => 
-    menu.parent_category === newPage.parent_category
-  );
+  const filteredMenus = menus.filter(menu => {
+    console.log("Checking menu:", menu.title, "with parent_category:", menu.parent_category, "against selected:", newPage.parent_category);
+    return menu.parent_category === newPage.parent_category;
+  });
 
   console.log("Selected parent category:", newPage.parent_category);
   console.log("Available menus for category:", filteredMenus);
@@ -96,7 +97,10 @@ const PageForm = ({
       />
       <Select
         value={newPage.parent_category}
-        onValueChange={(value) => setNewPage({ ...newPage, parent_category: value, menu_id: "" })}
+        onValueChange={(value) => {
+          console.log("Parent category selected:", value);
+          setNewPage({ ...newPage, parent_category: value, menu_id: "" });
+        }}
         required
       >
         <SelectTrigger className="bg-gray-700">
