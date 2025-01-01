@@ -20,15 +20,15 @@ const Dashboard = () => {
   } = useContent();
 
   useEffect(() => {
-    // Immediately redirect if we know there's no user and we're not loading
+    console.log("Dashboard auth state:", { user, isAuthLoading });
     if (!isAuthLoading && !user) {
       console.log("No authenticated user, redirecting to login");
       navigate("/login");
     }
   }, [user, isAuthLoading, navigate]);
 
-  // Show loading state while checking auth
   if (isAuthLoading) {
+    console.log("Auth loading, showing spinner");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <LoadingSpinner size="lg" message="Checking authentication..." />
@@ -36,12 +36,15 @@ const Dashboard = () => {
     );
   }
 
-  // If no user is found after loading, return null (useEffect will handle redirect)
-  if (!user) return null;
+  if (!user) {
+    console.log("No user found, returning null");
+    return null;
+  }
 
   const canManageContent = userRole === "admin" || userRole === "editor";
 
   if (!canManageContent) {
+    console.log("User lacks permission");
     return (
       <div className="min-h-screen pt-20 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4">

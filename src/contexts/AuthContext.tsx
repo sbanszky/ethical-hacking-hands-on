@@ -25,83 +25,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    async function initialize() {
+    const fetchUserRole = async (userId: string) => {
       try {
-        // Get initial session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-
-        if (!session) {
-          setUser(null);
-          setUserRole("");
-          setIsLoading(false);
-          return;
-        }
-
-        // Get user role
-        const { data: profile, error } = await supabase
+        const { data, error } = await supabase
           .from("profiles")
           .select("role")
-          .eq("id", session.user.id)
+          .eq("id", userId)
           .single();
 
-        if (error) {
-          console.error("Error fetching user role:", error);
-          setUser(null);
-          setUserRole("");
-          setIsLoading(false);
-          return;
-        }
-
-        if (mounted) {
-          setUser(session.user);
-          setUserRole(profile?.role || "");
-          setIsLoading(false);
-        }
+        if (error) throw error;
+        return data?.role || "";
       } catch (error) {
-        console.error("Error in auth initialization:", error);
-        if (mounted) {
-          setUser(null);
-          setUserRole("");
-          setIsLoading(false);
-        }
+        console.error("Error fetching user role:", error);
+        return "";
       }
-    }
+    };
 
-    // Initialize auth state
-    initialize();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
+    const handleAuthStateChange = async (session: any) => {
+      console.log("Auth state change handler called", { session });
       
-      if (!mounted) return;
-
-      setIsLoading(true);
-
-      if (!session) {
-        setUser(null);
-        setUserRole("");
-        setIsLoading(false);
+      if (!mounted) {
+        console.log("Component unmounted, skipping state update");
         return;
       }
 
       try {
-        const { data: profile, error } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", session.user.id)
-          .single();
-
-        if (error) {
-          console.error("Error fetching user role:", error);
-          throw error;
+        if (!session) {
+          console.log("No session found, clearing auth state");
+          setUser(null);
+          setUserRole("");
+          return;
         }
 
+        const role = await fetchUserRole(session.user.id);
+        console.log("Fetched user role:", role);
+        
         if (mounted) {
           setUser(session.user);
-          setUserRole(profile?.role || "");
+          setUserRole(role);
         }
       } catch (error) {
         console.error("Error in auth state change:", error);
@@ -109,14 +70,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null);
           setUserRole("");
         }
-      } finally {
+      }
+    };
+
+    // Initial auth check
+    console.log("Starting initial auth check");
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleAuthStateChange(session).finally(() => {
         if (mounted) {
+          console.log("Initial auth check complete, setting loading to false");
+          setIsLoading(false);
+        }
+      });
+    });
+
+    // Auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        console.log("Auth state changed:", _event);
+        if (mounted) {
+          setIsLoading(true);
+          await handleAuthStateChange(session);
           setIsLoading(false);
         }
       }
-    });
+    );
 
     return () => {
+      console.log("Cleaning up auth context");
       mounted = false;
       subscription.unsubscribe();
     };
