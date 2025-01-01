@@ -4,11 +4,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
+const formSchema = z.object({
+  username: z.string()
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username must be less than 20 characters")
+    .regex(/^[a-zA-Z0-9_-]+$/, "Username can only contain letters, numbers, underscores, and hyphens"),
+});
 
 const UsernameSetup = () => {
-  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+    },
+  });
 
   useEffect(() => {
     console.log("UsernameSetup component mounted");
@@ -59,14 +83,7 @@ const UsernameSetup = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!username.trim()) {
-      toast.error("Username cannot be empty");
-      return;
-    }
-
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
@@ -84,7 +101,7 @@ const UsernameSetup = () => {
 
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ username: username.trim() })
+        .update({ username: values.username.trim() })
         .eq("id", session.user.id);
 
       if (updateError) {
@@ -117,25 +134,42 @@ const UsernameSetup = () => {
     <div className="min-h-screen flex items-center justify-center bg-hack-background px-4">
       <div className="w-full max-w-md p-8 bg-gray-800 rounded-lg shadow-lg">
         <h1 className="text-2xl font-bold text-white mb-6 text-center">Set Your Username</h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label htmlFor="username" className="text-sm font-medium text-gray-200">
-              Username
-            </label>
-            <Input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
-              className="w-full bg-gray-700 border-gray-600 text-white"
-              autoFocus
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Username</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      className="bg-gray-700 border-gray-600 text-white"
+                      placeholder="Enter your username"
+                      autoFocus
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <Button type="submit" className="w-full bg-hack-accent hover:bg-hack-accent/90">
-            Set Username
-          </Button>
-        </form>
+            <Button 
+              type="submit" 
+              className="w-full bg-hack-accent hover:bg-hack-accent/90"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                  Setting username...
+                </div>
+              ) : (
+                "Set Username"
+              )}
+            </Button>
+          </form>
+        </Form>
       </div>
     </div>
   );
