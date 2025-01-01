@@ -69,17 +69,9 @@ const PageForm = ({
     onPageCreated();
   };
 
-  // Filter menus based on selected parent category
-  const filteredMenus = menus.filter(menu => {
-    console.log(`Menu "${menu.title}" - Parent Category: ${menu.parent_category}`);
-    const matches = menu.parent_category === newPage.parent_category;
-    console.log(`Does menu "${menu.title}" match selected category "${newPage.parent_category}"? ${matches}`);
-    return matches;
-  });
-
-  console.log("All available menus:", menus);
+  // Show all available menus for debugging
+  console.log("All available menus:", menus.map(m => ({ title: m.title, category: m.parent_category })));
   console.log("Selected parent category:", newPage.parent_category);
-  console.log("Filtered menus for selected category:", filteredMenus);
 
   return (
     <form onSubmit={handleCreatePage} className="mb-6 space-y-4">
@@ -128,7 +120,7 @@ const PageForm = ({
             <SelectValue placeholder="Select Menu" />
           </SelectTrigger>
           <SelectContent className="bg-gray-800 border-gray-700">
-            {filteredMenus.map((menu) => (
+            {menus.map((menu) => (
               <SelectItem key={menu.id} value={menu.id} className="text-white hover:bg-gray-700">
                 {menu.title}
               </SelectItem>
