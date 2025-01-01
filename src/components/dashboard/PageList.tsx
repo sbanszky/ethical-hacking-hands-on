@@ -47,38 +47,43 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
   };
 
   return (
-    <div className="space-y-2 mt-4">
+    <div className="space-y-4 mt-4">
       {pages && pages.length > 0 ? (
         pages.map((page) => (
           <div
             key={page.id}
-            className="flex items-center justify-between p-3 bg-gray-700 rounded cursor-move"
+            className="flex flex-col bg-gray-700 rounded overflow-hidden"
             draggable
             onDragStart={() => handleDragStart(page)}
             onDragOver={(e) => handleDragOver(e, page)}
           >
-            <div className="flex items-center gap-2">
-              <GripVertical className="h-4 w-4 text-gray-400" />
-              <div className="flex flex-col">
-                <span className="font-medium">{page.title}</span>
-                <span className="text-sm text-gray-400">
-                  Menu: {getMenuTitle(page.menu_id)}
-                </span>
+            <div className="flex items-center justify-between p-3 border-b border-gray-600">
+              <div className="flex items-center gap-2">
+                <GripVertical className="h-4 w-4 text-gray-400 cursor-move" />
+                <div className="flex flex-col">
+                  <span className="font-medium">{page.title}</span>
+                  <span className="text-sm text-gray-400">
+                    Menu: {getMenuTitle(page.menu_id)}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <EditPageDialog 
+                  page={page} 
+                  menus={menus} 
+                  onPageUpdated={onReorderPages} 
+                />
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onDeletePage(page.id)}
+                >
+                  Delete
+                </Button>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <EditPageDialog 
-                page={page} 
-                menus={menus} 
-                onPageUpdated={onReorderPages} 
-              />
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => onDeletePage(page.id)}
-              >
-                Delete
-              </Button>
+            <div className="p-4 bg-gray-800 text-gray-300 whitespace-pre-wrap">
+              {page.content || 'No content'}
             </div>
           </div>
         ))
