@@ -109,14 +109,14 @@ const Sidebar = () => {
       icon: <File className="h-4 w-4" />,
       type: 'menu',
       children: pages
-        .filter(page => page.menu_id === menu.id)
+        ?.filter(page => page.menu_id === menu.id)
         .map(page => ({
           id: page.id,
           title: page.title,
           icon: <File className="h-4 w-4" />,
           type: 'page',
           slug: page.slug
-        }))
+        })) || []
     }))
   }));
 
