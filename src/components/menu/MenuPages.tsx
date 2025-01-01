@@ -69,9 +69,9 @@ const MenuPages = () => {
                   </Link>
                   {page.content && (
                     <div className="mt-4 bg-gray-900 p-6 rounded-lg">
-                      <div className="prose prose-invert max-w-none text-gray-200">
+                      <div className="prose prose-invert max-w-none">
                         {Array.isArray(page.marked_sections) && (page.marked_sections as unknown as MarkedSection[]).length > 0 ? (
-                          <div>
+                          <div className="text-white">
                             {page.content.split('').map((char, index) => {
                               const markedSections = (page.marked_sections as unknown as MarkedSection[]) || [];
                               const isInMarkedSection = markedSections.some(
@@ -85,7 +85,7 @@ const MenuPages = () => {
                             })}
                           </div>
                         ) : (
-                          <div style={{ whiteSpace: 'pre-wrap' }}>{page.content}</div>
+                          <div className="text-white whitespace-pre-wrap">{page.content}</div>
                         )}
                       </div>
                     </div>
