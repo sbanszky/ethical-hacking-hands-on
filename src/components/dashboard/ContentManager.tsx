@@ -29,6 +29,7 @@ const ContentManager = ({
   onReorderPages,
 }: ContentManagerProps) => {
   console.log("ContentManager received menus:", menus);
+  console.log("ContentManager received pages:", pages);
   
   return (
     <div className="space-y-8">
@@ -37,6 +38,7 @@ const ContentManager = ({
         <MenuForm onMenuCreated={onMenuCreated} />
         <MenuList 
           menus={menus} 
+          pages={pages}
           onDeleteMenu={onDeleteMenu} 
           onReorderMenus={onReorderMenus}
         />

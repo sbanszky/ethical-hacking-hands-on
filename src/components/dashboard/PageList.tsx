@@ -27,13 +27,18 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
     reorderedPages.splice(draggedIndex, 1);
     reorderedPages.splice(targetIndex, 0, draggedItem);
 
-    // Update order_index for each page
     const updatedPages = reorderedPages.map((page, index) => ({
       ...page,
       order_index: index
     }));
 
     onReorderPages(updatedPages);
+  };
+
+  const getMenuTitle = (menuId: string | null) => {
+    if (!menuId) return 'No menu';
+    const menu = menus.find(m => m.id === menuId);
+    return menu ? menu.title : 'No menu';
   };
 
   return (
@@ -52,7 +57,7 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
               <div className="flex flex-col">
                 <span className="font-medium">{page.title}</span>
                 <span className="text-sm text-gray-400">
-                  {menus.find((m: any) => m.id === page.menu_id)?.title || 'No menu'}
+                  Menu: {getMenuTitle(page.menu_id)}
                 </span>
               </div>
             </div>
