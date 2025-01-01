@@ -120,12 +120,30 @@ const Navbar = () => {
     }
   };
 
+  const menuItems = [
+    { title: "Documentation", href: "/docs" },
+    { title: "Tools", href: "/tools" },
+    { title: "How To", href: "/howto" },
+  ];
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-hack-background border-b border-gray-800 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
             <h1 className="text-white font-mono text-xl">HackNotes</h1>
+            <div className="hidden md:flex items-center gap-4">
+              {menuItems.map((item) => (
+                <Button
+                  key={item.title}
+                  variant="ghost"
+                  className="text-gray-300 hover:text-white"
+                  onClick={() => navigate(item.href)}
+                >
+                  {item.title}
+                </Button>
+              ))}
+            </div>
           </div>
 
           <div className="flex items-center gap-4 flex-1 justify-end">
