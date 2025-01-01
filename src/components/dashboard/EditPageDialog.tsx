@@ -8,6 +8,7 @@ import { Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
+import { MarkedSection } from "@/types/marked-sections";
 
 type Menu = Database['public']['Tables']['menus']['Row'];
 type Page = Database['public']['Tables']['pages']['Row'];
@@ -18,12 +19,6 @@ interface EditPageDialogProps {
   onPageUpdated: (pages: Page[]) => void;
 }
 
-interface MarkedSection {
-  start: number;
-  end: number;
-  content: string;
-}
-
 const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => {
   const [open, setOpen] = useState(false);
   const [editedPage, setEditedPage] = useState({
@@ -31,7 +26,7 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
     content: page.content || "",
     slug: page.slug,
     menu_id: page.menu_id || "",
-    markedSections: (page.marked_sections as MarkedSection[]) || []
+    markedSections: (page.marked_sections as unknown as MarkedSection[]) || []
   });
   const [selectionStart, setSelectionStart] = useState<number | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<number | null>(null);
@@ -57,7 +52,7 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
         content: editedPage.content,
         slug: editedPage.slug,
         menu_id: editedPage.menu_id || null,
-        marked_sections: editedPage.markedSections
+        marked_sections: editedPage.markedSections as unknown as Json[]
       })
       .eq("id", page.id);
 

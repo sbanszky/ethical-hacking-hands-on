@@ -4,15 +4,10 @@ import { useState } from "react";
 import EditPageDialog from "./EditPageDialog";
 import { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
+import { MarkedSection } from "@/types/marked-sections";
 
 type Menu = Database['public']['Tables']['menus']['Row'];
 type Page = Database['public']['Tables']['pages']['Row'];
-
-interface MarkedSection {
-  start: number;
-  end: number;
-  content: string;
-}
 
 interface PageListProps {
   pages: Page[];
@@ -113,10 +108,10 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
               </div>
 
               {/* Marked sections */}
-              {page.marked_sections && (page.marked_sections as MarkedSection[]).length > 0 && (
+              {page.marked_sections && (page.marked_sections as unknown as MarkedSection[]).length > 0 && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold text-gray-300">Marked Code Sections:</h4>
-                  {(page.marked_sections as MarkedSection[]).map((section, index) => (
+                  {(page.marked_sections as unknown as MarkedSection[]).map((section, index) => (
                     <div key={index} className="relative">
                       <pre className="bg-gray-800 text-gray-300 p-4 rounded whitespace-pre-wrap">
                         <code>{section.content}</code>
