@@ -14,6 +14,7 @@ export type Database = {
           created_at: string
           id: string
           order_index: number
+          parent_category: string | null
           slug: string
           title: string
           updated_at: string
@@ -23,6 +24,7 @@ export type Database = {
           created_at?: string
           id?: string
           order_index?: number
+          parent_category?: string | null
           slug: string
           title: string
           updated_at?: string
@@ -32,6 +34,7 @@ export type Database = {
           created_at?: string
           id?: string
           order_index?: number
+          parent_category?: string | null
           slug?: string
           title?: string
           updated_at?: string
