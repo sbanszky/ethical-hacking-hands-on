@@ -21,32 +21,25 @@ const Dashboard = () => {
   } = useContent();
 
   useEffect(() => {
-    console.log("Dashboard mounting, checking session...");
-    const checkSession = async () => {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error("Session error in Dashboard:", sessionError);
-        toast.error("Session error. Please log in again.");
-        navigate("/login");
-        return;
-      }
+    console.log("Dashboard mounting, current user role:", userRole);
+    
+    if (!isAuthLoading && !userRole) {
+      console.log("No user role found, redirecting to login");
+      navigate("/login");
+      return;
+    }
 
-      if (!session) {
-        console.log("No session found in Dashboard, redirecting to login");
-        navigate("/login");
-        return;
+    const loadContent = async () => {
+      if (!isAuthLoading && userRole) {
+        console.log("Loading content for user with role:", userRole);
+        await Promise.all([fetchMenus(), fetchPages()]);
       }
-
-      console.log("Session found, user role:", userRole);
-      console.log("Fetching content...");
-      await Promise.all([fetchMenus(), fetchPages()]);
     };
 
-    checkSession();
+    loadContent();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed in Dashboard:", event, session);
+      console.log("Auth state changed in Dashboard:", event);
       if (event === 'SIGNED_OUT' || !session) {
         toast.info("Session ended. Please log in again.");
         navigate("/login");
@@ -56,7 +49,7 @@ const Dashboard = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [fetchMenus, fetchPages, navigate, userRole]);
+  }, [fetchMenus, fetchPages, navigate, userRole, isAuthLoading]);
 
   if (isAuthLoading) {
     return (

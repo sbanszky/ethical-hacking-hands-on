@@ -9,11 +9,15 @@ export const useAuthCheck = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
         console.log("Starting auth check...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
+        if (!mounted) return;
+
         if (sessionError) {
           console.error("Session error:", sessionError);
           toast.error("Authentication error. Please log in again.");
@@ -29,71 +33,92 @@ export const useAuthCheck = () => {
           return;
         }
 
-        console.log("Session found, checking profile...");
+        console.log("Session found, checking profile for user:", session.user.id);
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role, username")
           .eq("id", session.user.id)
           .single();
 
+        if (!mounted) return;
+
         if (profileError) {
           console.error("Profile fetch error:", profileError);
+          if (profileError.code === 'PGRST116') {
+            console.log("Profile doesn't exist, creating new profile");
+            const { error: insertError } = await supabase
+              .from("profiles")
+              .insert([{ 
+                id: session.user.id,
+                role: 'reader',
+                email: session.user.email
+              }]);
+
+            if (insertError) {
+              console.error("Error creating profile:", insertError);
+              toast.error("Error creating user profile");
+              setIsLoading(false);
+              return;
+            }
+
+            setUserRole('reader');
+            setIsLoading(false);
+            navigate("/username-setup");
+            return;
+          }
+          
           toast.error("Error fetching user profile");
           setIsLoading(false);
           return;
         }
 
-        if (!profile) {
-          console.log("No profile found, creating new profile");
-          const { error: insertError } = await supabase
-            .from("profiles")
-            .insert([{ 
-              id: session.user.id,
-              role: 'reader',
-              email: session.user.email
-            }]);
-
-          if (insertError) {
-            console.error("Error creating profile:", insertError);
-            toast.error("Error creating user profile");
-            setIsLoading(false);
-            return;
-          }
-
-          setUserRole('reader');
-          setIsLoading(false);
-          navigate("/username-setup");
-        } else if (!profile.username) {
+        if (!profile.username) {
           console.log("Profile found but no username, redirecting to setup");
           setUserRole(profile.role);
           setIsLoading(false);
           navigate("/username-setup");
-        } else {
-          console.log("Profile complete, setting role:", profile.role);
-          setUserRole(profile.role);
-          setIsLoading(false);
+          return;
         }
+
+        console.log("Profile complete, setting role:", profile.role);
+        setUserRole(profile.role);
+        setIsLoading(false);
       } catch (error) {
         console.error("Authentication check error:", error);
         toast.error("Error checking authentication");
-        setIsLoading(false);
-        navigate("/login");
+        if (mounted) {
+          setIsLoading(false);
+          navigate("/login");
+        }
       }
     };
 
+    // Initial auth check
     checkAuth();
     
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
+      console.log("Auth state changed:", event);
+      
+      if (!mounted) return;
+
       if (event === 'SIGNED_OUT' || !session) {
+        console.log("User signed out or session ended");
+        setUserRole("");
         setIsLoading(false);
         navigate("/login");
-      } else if (session) {
+        return;
+      }
+
+      if (event === 'SIGNED_IN') {
+        console.log("User signed in, checking auth...");
         await checkAuth();
       }
     });
 
+    // Cleanup function
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate]);
