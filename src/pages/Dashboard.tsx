@@ -22,7 +22,14 @@ const Dashboard = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("Session error in Dashboard:", sessionError);
+        navigate("/login");
+        return;
+      }
+
       if (!session) {
         console.log("No session found in Dashboard, redirecting to login");
         navigate("/login");
@@ -39,7 +46,7 @@ const Dashboard = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed in Dashboard:", event, session);
-      if (!session) {
+      if (event === 'SIGNED_OUT' || !session) {
         navigate("/login");
       }
     });

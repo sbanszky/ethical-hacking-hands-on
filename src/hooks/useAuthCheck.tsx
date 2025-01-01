@@ -11,16 +11,22 @@ export const useAuthCheck = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         console.log("Session check in useAuthCheck:", session);
         
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          navigate("/login");
+          return;
+        }
+
         if (!session) {
           console.log("No session found in useAuthCheck, redirecting to login");
           navigate("/login");
           return;
         }
 
-        // Fetch user profile with maybeSingle
+        // Fetch user profile with explicit UUID casting
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role")
@@ -66,9 +72,9 @@ export const useAuthCheck = () => {
 
     checkAuth();
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed in useAuthCheck:", event, session);
-      if (!session) {
+      if (event === 'SIGNED_OUT' || !session) {
         navigate("/login");
       }
     });
