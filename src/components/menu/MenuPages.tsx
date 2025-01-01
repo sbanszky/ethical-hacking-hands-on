@@ -56,21 +56,24 @@ const MenuPages = () => {
           <div className="space-y-6">
             {menuPages.map(page => (
               <div key={page.id} className="bg-gray-800 rounded-lg overflow-hidden">
-                <div className="p-4">
+                <div className="p-6">
                   <Link
                     to={`/pages/${page.slug}`}
                     className="block hover:text-blue-400 transition-colors"
                   >
-                    <h2 className="text-xl font-semibold mb-4">{page.title}</h2>
+                    <h2 className="text-xl font-semibold mb-2">{page.title}</h2>
                   </Link>
-                  <div className="bg-gray-900 p-4 rounded-lg">
-                    <div className="prose prose-invert max-w-none">
-                      {page.content ? (
-                        <div className="whitespace-pre-wrap text-gray-300">{page.content}</div>
-                      ) : (
-                        <p className="text-gray-500 italic">No content available</p>
-                      )}
-                    </div>
+                  <div className="mt-4 bg-gray-900 p-6 rounded-lg">
+                    {page.content ? (
+                      <div 
+                        className="prose prose-invert max-w-none prose-p:text-gray-300"
+                        style={{ whiteSpace: 'pre-wrap' }}
+                      >
+                        {page.content}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 italic">No content available</p>
+                    )}
                   </div>
                 </div>
               </div>

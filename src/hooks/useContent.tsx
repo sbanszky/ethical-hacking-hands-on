@@ -13,7 +13,6 @@ export const useContent = () => {
 
   const fetchMenus = useCallback(async () => {
     console.log("Fetching menus...");
-    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from("menus")
@@ -31,14 +30,11 @@ export const useContent = () => {
     } catch (error) {
       console.error("Error in fetchMenus:", error);
       toast.error("Failed to fetch menus");
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
   const fetchPages = useCallback(async () => {
     console.log("Fetching pages...");
-    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from("pages")
@@ -51,13 +47,11 @@ export const useContent = () => {
         return;
       }
       
-      console.log("Pages fetched:", data);
+      console.log("Pages fetched with content:", data);
       setPages(data);
     } catch (error) {
       console.error("Error in fetchPages:", error);
       toast.error("Failed to fetch pages");
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
