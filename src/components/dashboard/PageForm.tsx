@@ -71,13 +71,15 @@ const PageForm = ({
 
   // Filter menus based on selected parent category
   const filteredMenus = menus.filter(menu => {
-    console.log(`Checking menu "${menu.title}" - Category: ${menu.parent_category}, Selected: ${newPage.parent_category}`);
-    return menu.parent_category === newPage.parent_category;
+    console.log(`Menu "${menu.title}" - Parent Category: ${menu.parent_category}`);
+    const matches = menu.parent_category === newPage.parent_category;
+    console.log(`Does menu "${menu.title}" match selected category "${newPage.parent_category}"? ${matches}`);
+    return matches;
   });
 
   console.log("All available menus:", menus);
   console.log("Selected parent category:", newPage.parent_category);
-  console.log("Filtered menus:", filteredMenus);
+  console.log("Filtered menus for selected category:", filteredMenus);
 
   return (
     <form onSubmit={handleCreatePage} className="mb-6 space-y-4">
