@@ -12,20 +12,67 @@ const Navbar = () => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session check:", session);
-      setUser(session?.user ?? null);
-    });
+    // Initial session check
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Initial session check:", session);
+        
+        if (error) {
+          console.error("Session error:", error);
+          await supabase.auth.signOut();
+          setUser(null);
+          return;
+        }
+        
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error("Session check error:", error);
+        setUser(null);
+      }
+    };
 
+    checkSession();
+
+    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", _event, session);
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session);
+      
+      if (event === 'SIGNED_OUT' || !session) {
+        setUser(null);
+        navigate("/login");
+        return;
+      }
+
+      if (event === 'SIGNED_IN' && session) {
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profileError) {
+            console.error("Error fetching profile:", profileError);
+            return;
+          }
+
+          if (!profile?.username) {
+            navigate("/username-setup");
+            return;
+          }
+
+          setUser(session.user);
+        } catch (error) {
+          console.error("Profile check error:", error);
+        }
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const handleSignOut = async () => {
     try {
@@ -36,6 +83,7 @@ const Navbar = () => {
         return;
       }
       console.log("Successfully signed out");
+      setUser(null);
       navigate("/");
       toast.success("Successfully signed out");
     } catch (error) {
