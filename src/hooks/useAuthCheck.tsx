@@ -62,14 +62,15 @@ export const useAuthCheck = () => {
           }
 
           setUserRole('reader');
+          setIsLoading(false);
           navigate("/username-setup");
         } else if (!profile.username) {
+          setIsLoading(false);
           navigate("/username-setup");
         } else {
           setUserRole(profile.role);
+          setIsLoading(false);
         }
-
-        setIsLoading(false);
       } catch (error) {
         console.error("Authentication check error:", error);
         toast.error("Error checking authentication");
