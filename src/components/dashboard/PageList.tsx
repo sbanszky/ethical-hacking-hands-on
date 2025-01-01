@@ -82,7 +82,7 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
                 </Button>
               </div>
             </div>
-            <div className="p-4 bg-gray-800 text-gray-300 whitespace-pre-wrap">
+            <div className="p-4 bg-gray-800 text-gray-300 whitespace-pre-wrap min-h-[100px]">
               {page.content || 'No content'}
             </div>
           </div>
