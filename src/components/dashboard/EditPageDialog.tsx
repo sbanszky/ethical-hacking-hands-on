@@ -18,14 +18,23 @@ interface EditPageDialogProps {
   onPageUpdated: (pages: Page[]) => void;
 }
 
+interface MarkedSection {
+  start: number;
+  end: number;
+  content: string;
+}
+
 const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => {
   const [open, setOpen] = useState(false);
   const [editedPage, setEditedPage] = useState({
     title: page.title,
     content: page.content || "",
     slug: page.slug,
-    menu_id: page.menu_id || ""
+    menu_id: page.menu_id || "",
+    markedSections: (page.marked_sections as MarkedSection[]) || []
   });
+  const [selectionStart, setSelectionStart] = useState<number | null>(null);
+  const [selectionEnd, setSelectionEnd] = useState<number | null>(null);
 
   const handleUpdatePage = async () => {
     console.log("Updating page with data:", editedPage);
@@ -47,7 +56,8 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
         title: editedPage.title,
         content: editedPage.content,
         slug: editedPage.slug,
-        menu_id: editedPage.menu_id || null
+        menu_id: editedPage.menu_id || null,
+        marked_sections: editedPage.markedSections
       })
       .eq("id", page.id);
 
@@ -57,7 +67,6 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
       return;
     }
 
-    // Fetch updated pages to pass to the callback
     const { data: updatedPages, error: fetchError } = await supabase
       .from("pages")
       .select("*")
@@ -74,6 +83,48 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
     onPageUpdated(updatedPages);
   };
 
+  const handleTextSelection = () => {
+    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      if (start !== end) {
+        setSelectionStart(start);
+        setSelectionEnd(end);
+      }
+    }
+  };
+
+  const markSelectedCode = () => {
+    if (selectionStart !== null && selectionEnd !== null) {
+      const selectedContent = editedPage.content.substring(selectionStart, selectionEnd);
+      const newMarkedSection = {
+        start: selectionStart,
+        end: selectionEnd,
+        content: selectedContent
+      };
+      
+      setEditedPage({
+        ...editedPage,
+        markedSections: [...editedPage.markedSections, newMarkedSection]
+      });
+      
+      setSelectionStart(null);
+      setSelectionEnd(null);
+      toast.success("Code section marked successfully");
+    }
+  };
+
+  const removeMarkedSection = (index: number) => {
+    const updatedSections = [...editedPage.markedSections];
+    updatedSections.splice(index, 1);
+    setEditedPage({
+      ...editedPage,
+      markedSections: updatedSections
+    });
+    toast.success("Marked section removed");
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -81,7 +132,7 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-gray-800 text-white">
+      <DialogContent className="bg-gray-800 text-white max-w-4xl">
         <DialogHeader>
           <DialogTitle>Edit Page</DialogTitle>
         </DialogHeader>
@@ -113,12 +164,44 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
               ))}
             </SelectContent>
           </Select>
-          <Textarea
-            placeholder="Page Content"
-            value={editedPage.content}
-            onChange={(e) => setEditedPage({ ...editedPage, content: e.target.value })}
-            className="bg-gray-700 min-h-[400px]"
-          />
+          <div className="space-y-2">
+            <Textarea
+              placeholder="Page Content"
+              value={editedPage.content}
+              onChange={(e) => setEditedPage({ ...editedPage, content: e.target.value })}
+              onSelect={handleTextSelection}
+              className="bg-gray-700 min-h-[300px]"
+            />
+            {selectionStart !== null && selectionEnd !== null && (
+              <Button onClick={markSelectedCode} className="w-full">
+                Mark Selected Code
+              </Button>
+            )}
+          </div>
+          
+          {editedPage.markedSections.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Marked Code Sections</h3>
+              <div className="space-y-2">
+                {editedPage.markedSections.map((section, index) => (
+                  <div key={index} className="bg-gray-700 p-2 rounded flex justify-between items-start">
+                    <pre className="text-sm overflow-x-auto">
+                      <code>{section.content}</code>
+                    </pre>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removeMarkedSection(index)}
+                      className="ml-2"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <Button onClick={handleUpdatePage} className="w-full">
             Update Page
           </Button>

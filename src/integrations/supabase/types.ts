@@ -47,6 +47,7 @@ export type Database = {
           content: string | null
           created_at: string
           id: string
+          marked_sections: Json | null
           menu_id: string | null
           order_index: number
           parent_id: string | null
@@ -59,6 +60,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           id?: string
+          marked_sections?: Json | null
           menu_id?: string | null
           order_index?: number
           parent_id?: string | null
@@ -71,6 +73,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           id?: string
+          marked_sections?: Json | null
           menu_id?: string | null
           order_index?: number
           parent_id?: string | null
