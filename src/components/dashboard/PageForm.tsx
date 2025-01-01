@@ -37,13 +37,13 @@ const PageForm = ({
       return;
     }
 
-    const { error } = await supabase.from("pages").insert([
+    const { data, error } = await supabase.from("pages").insert([
       { 
         ...newPage,
         user_id: user.id,
         parent_category: newPage.parent_category
       },
-    ]);
+    ]).select();
 
     if (error) {
       console.error("Error creating page:", error);
@@ -51,6 +51,7 @@ const PageForm = ({
       return;
     }
 
+    console.log("Page created successfully:", data);
     toast.success("Page created successfully");
     setNewPage({ title: "", content: "", slug: "", menu_id: "", parent_category: "" });
     onPageCreated();

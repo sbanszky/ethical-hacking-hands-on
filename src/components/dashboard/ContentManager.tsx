@@ -21,7 +21,7 @@ const ContentManager = ({
   onDeletePage,
 }: ContentManagerProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="space-y-8">
       <div className="bg-gray-800 p-6 rounded-lg">
         <h2 className="text-xl font-semibold mb-4">Manage Menus</h2>
         <MenuForm onMenuCreated={onMenuCreated} />

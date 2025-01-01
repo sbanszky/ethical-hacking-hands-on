@@ -28,14 +28,14 @@ const MenuForm = ({ onMenuCreated }: { onMenuCreated: () => void }) => {
       return;
     }
 
-    const { error } = await supabase.from("menus").insert([
+    const { data, error } = await supabase.from("menus").insert([
       { 
         title: newMenu.title,
         slug: newMenu.slug,
         user_id: user.id,
         parent_category: newMenu.parent_category
       },
-    ]);
+    ]).select();
 
     if (error) {
       console.error("Error creating menu:", error);
@@ -43,6 +43,7 @@ const MenuForm = ({ onMenuCreated }: { onMenuCreated: () => void }) => {
       return;
     }
 
+    console.log("Menu created successfully:", data);
     toast.success("Menu created successfully");
     setNewMenu({ title: "", slug: "", parent_category: "" });
     onMenuCreated();
