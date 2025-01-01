@@ -10,6 +10,7 @@ import type { User } from "@supabase/supabase-js";
 const Navbar = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -19,7 +20,6 @@ const Navbar = () => {
         
         if (error) {
           console.error("Session error:", error);
-          await supabase.auth.signOut();
           setUser(null);
           return;
         }
@@ -28,6 +28,8 @@ const Navbar = () => {
       } catch (error) {
         console.error("Session check error:", error);
         setUser(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -45,6 +47,7 @@ const Navbar = () => {
 
   const handleSignIn = async () => {
     try {
+      setIsLoading(true);
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: 'blueStone@example.com',
         password: 'SuperSecret@2025'
@@ -61,11 +64,14 @@ const Navbar = () => {
     } catch (error) {
       console.error("Unexpected error during sign in:", error);
       toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSignOut = async () => {
     try {
+      setIsLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Sign out error:", error);
@@ -79,6 +85,8 @@ const Navbar = () => {
     } catch (error) {
       console.error("Unexpected error during sign out:", error);
       toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -117,31 +125,34 @@ const Navbar = () => {
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             </div>
-            {user ? (
-              <div className="flex items-center gap-4">
+            {!isLoading && (
+              user ? (
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="ghost"
+                    className="text-gray-300 hover:text-white"
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    Dashboard
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="text-gray-300 hover:text-white"
+                    onClick={handleSignOut}
+                  >
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
                 <Button
-                  variant="ghost"
-                  className="text-gray-300 hover:text-white"
-                  onClick={() => navigate("/dashboard")}
+                  variant="default"
+                  className="bg-hack-accent hover:bg-hack-accent/90"
+                  onClick={handleSignIn}
+                  disabled={isLoading}
                 >
                   Dashboard
                 </Button>
-                <Button
-                  variant="ghost"
-                  className="text-gray-300 hover:text-white"
-                  onClick={handleSignOut}
-                >
-                  Sign Out
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="default"
-                className="bg-hack-accent hover:bg-hack-accent/90"
-                onClick={handleSignIn}
-              >
-                Dashboard
-              </Button>
+              )
             )}
           </div>
         </div>
