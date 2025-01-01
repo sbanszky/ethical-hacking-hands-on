@@ -16,7 +16,8 @@ const Dashboard = () => {
     fetchMenus, 
     fetchPages, 
     handleDeleteMenu, 
-    handleDeletePage 
+    handleDeletePage,
+    isLoading: isContentLoading
   } = useContent();
 
   useEffect(() => {
@@ -37,9 +38,9 @@ const Dashboard = () => {
         return;
       }
 
-      console.log("Session found, fetching content...");
-      fetchMenus();
-      fetchPages();
+      console.log("Session found, user role:", userRole);
+      console.log("Fetching content...");
+      await Promise.all([fetchMenus(), fetchPages()]);
     };
 
     checkSession();
@@ -55,14 +56,16 @@ const Dashboard = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [fetchMenus, fetchPages, navigate]);
+  }, [fetchMenus, fetchPages, navigate, userRole]);
 
-  if (isAuthLoading) {
+  if (isAuthLoading || isContentLoading) {
     return (
       <div className="min-h-screen pt-20 bg-hack-background text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hack-accent mx-auto mb-4"></div>
-          <p className="text-hack-accent">Loading...</p>
+          <p className="text-hack-accent">
+            {isAuthLoading ? "Checking authentication..." : "Loading content..."}
+          </p>
         </div>
       </div>
     );
