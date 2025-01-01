@@ -20,11 +20,14 @@ const Dashboard = () => {
   } = useContent();
 
   useEffect(() => {
+    // Immediately redirect if we know there's no user and we're not loading
     if (!isAuthLoading && !user) {
+      console.log("No authenticated user, redirecting to login");
       navigate("/login");
     }
   }, [user, isAuthLoading, navigate]);
 
+  // Show loading state while checking auth
   if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -33,6 +36,7 @@ const Dashboard = () => {
     );
   }
 
+  // If no user is found after loading, return null (useEffect will handle redirect)
   if (!user) return null;
 
   const canManageContent = userRole === "admin" || userRole === "editor";
