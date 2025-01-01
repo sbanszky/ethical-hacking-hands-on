@@ -63,8 +63,8 @@ const Sidebar = () => {
   const { menus } = useContent();
   console.log("Sidebar menus:", menus);
 
-  // Group menus by parent_category
-  const groupedMenus = (menus || []).reduce((acc: Record<string, Menu[]>, menu: Menu) => {
+  // Group menus by parent_category with proper typing
+  const groupedMenus: Record<string, Menu[]> = (menus || []).reduce((acc: Record<string, Menu[]>, menu: Menu) => {
     const category = menu.parent_category || 'uncategorized';
     if (!acc[category]) {
       acc[category] = [];
@@ -75,7 +75,7 @@ const Sidebar = () => {
 
   console.log("Grouped menus:", groupedMenus);
 
-  const menuItems: MenuItem[] = Object.entries(groupedMenus).map(([category, categoryMenus]) => ({
+  const menuItems: MenuItem[] = Object.entries(groupedMenus).map(([category, categoryMenus]: [string, Menu[]]) => ({
     id: category,
     title: category.charAt(0).toUpperCase() + category.slice(1),
     icon: getIconForCategory(category),
