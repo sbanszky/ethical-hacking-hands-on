@@ -69,25 +69,19 @@ const MenuPages = () => {
                   </Link>
                   {page.content && (
                     <div className="mt-4 bg-gray-900 p-6 rounded-lg">
-                      <div 
-                        className="prose prose-invert max-w-none prose-p:text-gray-300"
-                      >
-                        {Array.isArray(page.marked_sections) && page.marked_sections.length > 0 ? (
+                      <div className="prose prose-invert max-w-none prose-p:text-gray-300">
+                        {Array.isArray(page.marked_sections) && (page.marked_sections as unknown as MarkedSection[]).length > 0 ? (
                           <div>
                             {page.content.split('').map((char, index) => {
                               const markedSections = (page.marked_sections as unknown as MarkedSection[]) || [];
                               const isInMarkedSection = markedSections.some(
-                                (section) => 
-                                  index >= section.start && index < section.end
+                                section => index >= section.start && index < section.end
                               );
-                              if (isInMarkedSection) {
-                                return (
-                                  <span key={index} className="bg-gray-700 font-mono">
-                                    {char}
-                                  </span>
-                                );
-                              }
-                              return char;
+                              return isInMarkedSection ? (
+                                <span key={index} className="bg-gray-700 font-mono">
+                                  {char}
+                                </span>
+                              ) : char;
                             })}
                           </div>
                         ) : (
