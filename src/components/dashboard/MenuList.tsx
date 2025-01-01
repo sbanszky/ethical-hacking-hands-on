@@ -1,12 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { GripVertical, ChevronDown, ChevronRight, Pencil } from "lucide-react";
+import { GripVertical, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import EditMenuDialog from "./EditMenuDialog";
+import { Database } from "@/integrations/supabase/types";
+
+type Menu = Database['public']['Tables']['menus']['Row'];
+type Page = Database['public']['Tables']['pages']['Row'];
 
 interface MenuListProps {
-  menus: any[];
-  pages: any[];
+  menus: Menu[];
+  pages: Page[];
   onDeleteMenu: (id: string) => void;
-  onReorderMenus: (reorderedMenus: any[]) => void;
+  onReorderMenus: (reorderedMenus: Menu[]) => void;
 }
 
 const MenuList = ({ menus, pages, onDeleteMenu, onReorderMenus }: MenuListProps) => {
@@ -57,7 +62,7 @@ const MenuList = ({ menus, pages, onDeleteMenu, onReorderMenus }: MenuListProps)
   return (
     <div className="space-y-2 mt-4">
       {menus && menus.length > 0 ? (
-        menus.map((menu: any) => {
+        menus.map((menu) => {
           const menuPages = getMenuPages(menu.id);
           const isExpanded = expandedMenus[menu.id];
 
@@ -93,14 +98,7 @@ const MenuList = ({ menus, pages, onDeleteMenu, onReorderMenus }: MenuListProps)
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => console.log("Edit menu:", menu.id)}
-                    className="px-2"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
+                  <EditMenuDialog menu={menu} onMenuUpdated={onReorderMenus} />
                   <Button
                     variant="destructive"
                     size="sm"
@@ -113,7 +111,7 @@ const MenuList = ({ menus, pages, onDeleteMenu, onReorderMenus }: MenuListProps)
 
               {isExpanded && menuPages.length > 0 && (
                 <div className="ml-8 space-y-2">
-                  {menuPages.map((page: any) => (
+                  {menuPages.map((page) => (
                     <div
                       key={page.id}
                       className="flex items-center justify-between p-2 bg-gray-600 rounded"

@@ -1,12 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { GripVertical, Pencil } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { useState } from "react";
+import EditPageDialog from "./EditPageDialog";
+import { Database } from "@/integrations/supabase/types";
+
+type Menu = Database['public']['Tables']['menus']['Row'];
+type Page = Database['public']['Tables']['pages']['Row'];
 
 interface PageListProps {
-  pages: any[];
-  menus: any[];
+  pages: Page[];
+  menus: Menu[];
   onDeletePage: (id: string) => void;
-  onReorderPages: (reorderedPages: any[]) => void;
+  onReorderPages: (reorderedPages: Page[]) => void;
 }
 
 const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps) => {
@@ -44,7 +49,7 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
   return (
     <div className="space-y-2 mt-4">
       {pages && pages.length > 0 ? (
-        pages.map((page: any) => (
+        pages.map((page) => (
           <div
             key={page.id}
             className="flex items-center justify-between p-3 bg-gray-700 rounded cursor-move"
@@ -62,14 +67,11 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => console.log("Edit page:", page.id)}
-                className="px-2"
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
+              <EditPageDialog 
+                page={page} 
+                menus={menus} 
+                onPageUpdated={onReorderPages} 
+              />
               <Button
                 variant="destructive"
                 size="sm"
