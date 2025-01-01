@@ -17,12 +17,14 @@ export const useAuthCheck = () => {
         if (sessionError) {
           console.error("Session error:", sessionError);
           toast.error("Authentication error. Please log in again.");
+          setIsLoading(false);
           navigate("/login");
           return;
         }
 
         if (!session) {
           console.log("No session found in useAuthCheck, redirecting to login");
+          setIsLoading(false);
           navigate("/login");
           return;
         }
@@ -38,6 +40,7 @@ export const useAuthCheck = () => {
         if (profileError) {
           console.error("Error fetching profile:", profileError);
           toast.error("Error fetching user role");
+          setIsLoading(false);
           return;
         }
 
@@ -53,6 +56,7 @@ export const useAuthCheck = () => {
           if (insertError) {
             console.error("Error creating profile:", insertError);
             toast.error("Error creating user profile");
+            setIsLoading(false);
             return;
           }
 
@@ -65,6 +69,7 @@ export const useAuthCheck = () => {
       } catch (error) {
         console.error("Authentication check error:", error);
         toast.error("Error checking authentication");
+        setIsLoading(false);
         navigate("/login");
       }
     };
@@ -74,6 +79,7 @@ export const useAuthCheck = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed in useAuthCheck:", event, session);
       if (event === 'SIGNED_OUT' || !session) {
+        setIsLoading(false);
         navigate("/login");
       } else if (session) {
         await checkAuth();
