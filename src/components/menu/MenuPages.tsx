@@ -47,15 +47,21 @@ const MenuPages = () => {
         </div>
 
         {menuPages.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {menuPages.map(page => (
-              <Link
-                key={page.id}
-                to={`/pages/${page.slug}`}
-                className="block p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                <h2 className="text-lg font-medium text-white">{page.title}</h2>
-              </Link>
+              <div key={page.id} className="bg-gray-800 rounded-lg overflow-hidden">
+                <Link
+                  to={`/pages/${page.slug}`}
+                  className="block p-4 hover:bg-gray-700 transition-colors"
+                >
+                  <h2 className="text-lg font-medium text-white mb-2">{page.title}</h2>
+                </Link>
+                <div className="px-4 pb-4">
+                  <div className="bg-gray-900 p-4 rounded-lg whitespace-pre-wrap text-gray-300">
+                    {page.content || 'No content available'}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
