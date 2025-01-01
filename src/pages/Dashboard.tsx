@@ -58,14 +58,27 @@ const Dashboard = () => {
     };
   }, [fetchMenus, fetchPages, navigate, userRole]);
 
-  if (isAuthLoading || isContentLoading) {
+  if (isAuthLoading) {
     return (
-      <div className="min-h-screen pt-20 bg-hack-background text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hack-accent mx-auto mb-4"></div>
-          <p className="text-hack-accent">
-            {isAuthLoading ? "Checking authentication..." : "Loading content..."}
-          </p>
+      <div className="min-h-screen pt-20 bg-hack-background text-white">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-center min-h-[60vh]">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hack-accent mx-auto"></div>
+            <p className="text-hack-accent">Checking authentication...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isContentLoading) {
+    return (
+      <div className="min-h-screen pt-20 bg-hack-background text-white">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-center min-h-[60vh]">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hack-accent mx-auto"></div>
+            <p className="text-hack-accent">Loading content...</p>
+          </div>
         </div>
       </div>
     );

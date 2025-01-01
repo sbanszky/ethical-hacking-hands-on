@@ -11,8 +11,8 @@ export const useAuthCheck = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log("Starting auth check...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        console.log("Session check in useAuthCheck:", session);
         
         if (sessionError) {
           console.error("Session error:", sessionError);
@@ -23,29 +23,28 @@ export const useAuthCheck = () => {
         }
 
         if (!session) {
-          console.log("No session found in useAuthCheck, redirecting to login");
+          console.log("No session found, redirecting to login");
           setIsLoading(false);
           navigate("/login");
           return;
         }
 
+        console.log("Session found, checking profile...");
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role, username")
           .eq("id", session.user.id)
-          .maybeSingle();
-
-        console.log("Profile fetch result:", { profile, profileError });
+          .single();
 
         if (profileError) {
-          console.error("Error fetching profile:", profileError);
-          toast.error("Error fetching user role");
+          console.error("Profile fetch error:", profileError);
+          toast.error("Error fetching user profile");
           setIsLoading(false);
           return;
         }
 
         if (!profile) {
-          console.log("No profile found, creating new profile with reader role");
+          console.log("No profile found, creating new profile");
           const { error: insertError } = await supabase
             .from("profiles")
             .insert([{ 
@@ -65,9 +64,12 @@ export const useAuthCheck = () => {
           setIsLoading(false);
           navigate("/username-setup");
         } else if (!profile.username) {
+          console.log("Profile found but no username, redirecting to setup");
+          setUserRole(profile.role);
           setIsLoading(false);
           navigate("/username-setup");
         } else {
+          console.log("Profile complete, setting role:", profile.role);
           setUserRole(profile.role);
           setIsLoading(false);
         }
@@ -82,7 +84,7 @@ export const useAuthCheck = () => {
     checkAuth();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed in useAuthCheck:", event, session);
+      console.log("Auth state changed:", event, session);
       if (event === 'SIGNED_OUT' || !session) {
         setIsLoading(false);
         navigate("/login");
