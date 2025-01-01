@@ -109,8 +109,6 @@ const Navbar = () => {
 
       console.log("Search results:", { pages: pagesResult.data, menus: menusResult.data });
       
-      // TODO: Implement search results display
-      // For now, we'll just show a toast with the number of results
       const totalResults = (pagesResult.data?.length || 0) + (menusResult.data?.length || 0);
       toast.info(`Found ${totalResults} results`);
       
@@ -161,33 +159,23 @@ const Navbar = () => {
             </form>
             
             {!isLoading && (
-              user ? (
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant="ghost"
-                    className="text-gray-300 hover:text-white"
-                    onClick={() => navigate("/dashboard")}
-                  >
-                    Dashboard
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="text-gray-300 hover:text-white"
-                    onClick={handleSignOut}
-                  >
-                    Sign Out
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  variant="default"
-                  className="bg-hack-accent hover:bg-hack-accent/90"
-                  onClick={handleSignIn}
-                  disabled={isLoading}
-                >
-                  Dashboard
-                </Button>
-              )
+              <Button
+                variant="default"
+                className="bg-hack-accent hover:bg-hack-accent/90"
+                onClick={user ? () => navigate("/dashboard") : handleSignIn}
+              >
+                Dashboard
+              </Button>
+            )}
+            
+            {!isLoading && user && (
+              <Button
+                variant="ghost"
+                className="text-gray-300 hover:text-white"
+                onClick={handleSignOut}
+              >
+                Sign Out
+              </Button>
             )}
           </div>
         </div>
