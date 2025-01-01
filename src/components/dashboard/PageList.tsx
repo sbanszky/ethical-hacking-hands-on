@@ -17,6 +17,8 @@ interface PageListProps {
 const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps) => {
   const [draggedItem, setDraggedItem] = useState<any>(null);
 
+  console.log("PageList received pages:", pages);
+
   const handleDragStart = (page: any) => {
     setDraggedItem(page);
   };
@@ -49,44 +51,47 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
   return (
     <div className="space-y-4 mt-4">
       {pages && pages.length > 0 ? (
-        pages.map((page) => (
-          <div
-            key={page.id}
-            className="flex flex-col bg-gray-700 rounded overflow-hidden"
-            draggable
-            onDragStart={() => handleDragStart(page)}
-            onDragOver={(e) => handleDragOver(e, page)}
-          >
-            <div className="flex items-center justify-between p-3 border-b border-gray-600">
-              <div className="flex items-center gap-2">
-                <GripVertical className="h-4 w-4 text-gray-400 cursor-move" />
-                <div className="flex flex-col">
-                  <span className="font-medium">{page.title}</span>
-                  <span className="text-sm text-gray-400">
-                    Menu: {getMenuTitle(page.menu_id)}
-                  </span>
+        pages.map((page) => {
+          console.log("Rendering page:", page.title, "with content:", page.content);
+          return (
+            <div
+              key={page.id}
+              className="flex flex-col bg-gray-700 rounded overflow-hidden"
+              draggable
+              onDragStart={() => handleDragStart(page)}
+              onDragOver={(e) => handleDragOver(e, page)}
+            >
+              <div className="flex items-center justify-between p-3 border-b border-gray-600">
+                <div className="flex items-center gap-2">
+                  <GripVertical className="h-4 w-4 text-gray-400 cursor-move" />
+                  <div className="flex flex-col">
+                    <span className="font-medium">{page.title}</span>
+                    <span className="text-sm text-gray-400">
+                      Menu: {getMenuTitle(page.menu_id)}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <EditPageDialog 
+                    page={page} 
+                    menus={menus} 
+                    onPageUpdated={onReorderPages} 
+                  />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => onDeletePage(page.id)}
+                  >
+                    Delete
+                  </Button>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <EditPageDialog 
-                  page={page} 
-                  menus={menus} 
-                  onPageUpdated={onReorderPages} 
-                />
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => onDeletePage(page.id)}
-                >
-                  Delete
-                </Button>
+              <div className="p-4 bg-gray-800 text-gray-300 whitespace-pre-wrap min-h-[100px]">
+                {page.content || 'No content'}
               </div>
             </div>
-            <div className="p-4 bg-gray-800 text-gray-300 whitespace-pre-wrap min-h-[100px]">
-              {page.content || 'No content'}
-            </div>
-          </div>
-        ))
+          );
+        })
       ) : (
         <p className="text-gray-400 text-center py-4">No pages created yet</p>
       )}

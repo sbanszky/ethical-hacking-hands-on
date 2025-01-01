@@ -30,6 +30,7 @@ const ContentManager = ({
 }: ContentManagerProps) => {
   console.log("ContentManager received menus:", menus);
   console.log("ContentManager received pages:", pages);
+  console.log("Pages content check:", pages.map(p => ({ title: p.title, content: p.content })));
   
   return (
     <div className="space-y-8">
