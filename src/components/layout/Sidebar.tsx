@@ -15,6 +15,7 @@ interface MenuItem {
   type: 'category' | 'menu' | 'page';
   children?: MenuItem[];
   slug?: string;
+  parent_category?: string;
 }
 
 const getIconForCategory = (category: string) => {
@@ -87,8 +88,8 @@ const Sidebar = () => {
   console.log("Sidebar menus:", menus);
   console.log("Sidebar pages:", pages);
 
-  // Group menus by parent_category
-  const groupedMenus: Record<string, Menu[]> = (menus || []).reduce((acc: Record<string, Menu[]>, menu: Menu) => {
+  // First, group menus by parent_category
+  const menusByCategory = (menus || []).reduce((acc: Record<string, Menu[]>, menu: Menu) => {
     const category = menu.parent_category || 'uncategorized';
     if (!acc[category]) {
       acc[category] = [];
@@ -97,30 +98,44 @@ const Sidebar = () => {
     return acc;
   }, {});
 
-  // Create menu items structure with pages
-  const menuItems: MenuItem[] = Object.entries(groupedMenus).map(([category, categoryMenus]: [string, Menu[]]) => ({
-    id: category,
-    title: category.charAt(0).toUpperCase() + category.slice(1),
-    icon: getIconForCategory(category),
-    type: 'category',
-    children: categoryMenus.map(menu => ({
-      id: menu.id,
-      title: menu.title,
-      icon: <File className="h-4 w-4" />,
-      type: 'menu',
-      children: pages
-        ?.filter(page => page.menu_id === menu.id)
-        .map(page => ({
+  console.log("Menus grouped by category:", menusByCategory);
+
+  // Create menu items structure
+  const menuItems: MenuItem[] = Object.entries(menusByCategory).map(([category, categoryMenus]) => {
+    console.log(`Processing category: ${category} with menus:`, categoryMenus);
+    
+    // Map the menus for this category
+    const menuChildren = categoryMenus.map(menu => {
+      // Find pages for this menu
+      const menuPages = pages?.filter(page => page.menu_id === menu.id) || [];
+      console.log(`Menu ${menu.title} (${menu.id}) has pages:`, menuPages);
+
+      return {
+        id: menu.id,
+        title: menu.title,
+        icon: <File className="h-4 w-4" />,
+        type: 'menu' as const,
+        parent_category: menu.parent_category,
+        children: menuPages.map(page => ({
           id: page.id,
           title: page.title,
           icon: <File className="h-4 w-4" />,
-          type: 'page',
+          type: 'page' as const,
           slug: page.slug
-        })) || []
-    }))
-  }));
+        }))
+      };
+    });
 
-  console.log("Menu items structure:", menuItems);
+    return {
+      id: category,
+      title: category.charAt(0).toUpperCase() + category.slice(1),
+      icon: getIconForCategory(category),
+      type: 'category' as const,
+      children: menuChildren
+    };
+  });
+
+  console.log("Final menu items structure:", menuItems);
 
   return (
     <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-hack-background border-r border-gray-800 overflow-y-auto">
