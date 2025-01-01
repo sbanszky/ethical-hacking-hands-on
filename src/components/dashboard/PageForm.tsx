@@ -27,7 +27,7 @@ const PageForm = ({
     content: "",
     slug: "",
     menu_id: "",
-    parent_category: ""
+    parent_category: "" // Keep this for filtering menus only
   });
 
   const handleCreatePage = async (e: React.FormEvent) => {
@@ -40,22 +40,24 @@ const PageForm = ({
       return;
     }
 
-    if (!newPage.parent_category) {
-      toast.error("Please select a parent category");
-      return;
-    }
-
     if (!newPage.title || !newPage.slug) {
       toast.error("Title and slug are required");
       return;
     }
 
-    const { data, error } = await supabase.from("pages").insert([
-      { 
-        ...newPage,
-        user_id: user.id,
-      },
-    ]).select();
+    // Only send the necessary page data to Supabase
+    const pageData = {
+      title: newPage.title,
+      content: newPage.content,
+      slug: newPage.slug,
+      menu_id: newPage.menu_id || null,
+      user_id: user.id
+    };
+
+    const { data, error } = await supabase
+      .from("pages")
+      .insert([pageData])
+      .select();
 
     if (error) {
       console.error("Error creating page:", error);
@@ -122,16 +124,18 @@ const PageForm = ({
           <SelectValue placeholder="Select Menu" />
         </SelectTrigger>
         <SelectContent className="bg-gray-800 border-gray-700">
-          {menus.map((menu) => (
-            <SelectItem 
-              key={menu.id} 
-              value={menu.id} 
-              className={`text-white hover:bg-gray-700 ${menu.parent_category ? 'pl-6' : ''}`}
-            >
-              {menu.title}
-              {menu.parent_category && <span className="text-gray-400 ml-2">({menu.parent_category})</span>}
-            </SelectItem>
-          ))}
+          {menus
+            .filter(menu => !newPage.parent_category || menu.parent_category === newPage.parent_category)
+            .map((menu) => (
+              <SelectItem 
+                key={menu.id} 
+                value={menu.id} 
+                className={`text-white hover:bg-gray-700 ${menu.parent_category ? 'pl-6' : ''}`}
+              >
+                {menu.title}
+                {menu.parent_category && <span className="text-gray-400 ml-2">({menu.parent_category})</span>}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
       <Textarea
