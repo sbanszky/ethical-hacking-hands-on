@@ -14,6 +14,8 @@ interface ContentManagerProps {
   onPageCreated: () => void;
   onDeleteMenu: (id: string) => void;
   onDeletePage: (id: string) => void;
+  onReorderMenus: (reorderedMenus: Menu[]) => void;
+  onReorderPages: (reorderedPages: Page[]) => void;
 }
 
 const ContentManager = ({
@@ -23,6 +25,8 @@ const ContentManager = ({
   onPageCreated,
   onDeleteMenu,
   onDeletePage,
+  onReorderMenus,
+  onReorderPages,
 }: ContentManagerProps) => {
   console.log("ContentManager received menus:", menus);
   
@@ -31,13 +35,22 @@ const ContentManager = ({
       <div className="bg-gray-800 p-6 rounded-lg">
         <h2 className="text-xl font-semibold mb-4">Manage Menus</h2>
         <MenuForm onMenuCreated={onMenuCreated} />
-        <MenuList menus={menus} onDeleteMenu={onDeleteMenu} />
+        <MenuList 
+          menus={menus} 
+          onDeleteMenu={onDeleteMenu} 
+          onReorderMenus={onReorderMenus}
+        />
       </div>
 
       <div className="bg-gray-800 p-6 rounded-lg">
         <h2 className="text-xl font-semibold mb-4">Manage Pages</h2>
         <PageForm menus={menus} onPageCreated={onPageCreated} />
-        <PageList pages={pages} menus={menus} onDeletePage={onDeletePage} />
+        <PageList 
+          pages={pages} 
+          menus={menus} 
+          onDeletePage={onDeletePage}
+          onReorderPages={onReorderPages}
+        />
       </div>
     </div>
   );

@@ -12,6 +12,8 @@ const Dashboard = () => {
     fetchPages, 
     handleDeleteMenu, 
     handleDeletePage,
+    handleReorderMenus,
+    handleReorderPages,
     isLoading: isContentLoading 
   } = useContent();
 
@@ -35,6 +37,8 @@ const Dashboard = () => {
           onPageCreated={fetchPages}
           onDeleteMenu={handleDeleteMenu}
           onDeletePage={handleDeletePage}
+          onReorderMenus={handleReorderMenus}
+          onReorderPages={handleReorderPages}
         />
       </div>
     </div>

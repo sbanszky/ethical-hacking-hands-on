@@ -105,6 +105,54 @@ export const useContent = () => {
     }
   }, [fetchPages]);
 
+  const handleReorderMenus = useCallback(async (reorderedMenus: any[]) => {
+    try {
+      const { error } = await supabase
+        .from("menus")
+        .upsert(
+          reorderedMenus.map(menu => ({
+            id: menu.id,
+            order_index: menu.order_index
+          }))
+        );
+
+      if (error) {
+        console.error("Error reordering menus:", error);
+        toast.error("Error reordering menus");
+        return;
+      }
+
+      setMenus(reorderedMenus);
+    } catch (error) {
+      console.error("Error in handleReorderMenus:", error);
+      toast.error("Failed to reorder menus");
+    }
+  }, []);
+
+  const handleReorderPages = useCallback(async (reorderedPages: any[]) => {
+    try {
+      const { error } = await supabase
+        .from("pages")
+        .upsert(
+          reorderedPages.map(page => ({
+            id: page.id,
+            order_index: page.order_index
+          }))
+        );
+
+      if (error) {
+        console.error("Error reordering pages:", error);
+        toast.error("Error reordering pages");
+        return;
+      }
+
+      setPages(reorderedPages);
+    } catch (error) {
+      console.error("Error in handleReorderPages:", error);
+      toast.error("Failed to reorder pages");
+    }
+  }, []);
+
   // Initial fetch when the hook is mounted
   useEffect(() => {
     console.log("useContent hook mounted, fetching initial data...");
@@ -120,6 +168,8 @@ export const useContent = () => {
     fetchMenus,
     fetchPages,
     handleDeleteMenu,
-    handleDeletePage
+    handleDeletePage,
+    handleReorderMenus,
+    handleReorderPages
   };
 };
