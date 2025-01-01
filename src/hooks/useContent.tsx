@@ -1,10 +1,14 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+type Menu = Database['public']['Tables']['menus']['Row'];
+type Page = Database['public']['Tables']['pages']['Row'];
 
 export const useContent = () => {
-  const [menus, setMenus] = useState([]);
-  const [pages, setPages] = useState([]);
+  const [menus, setMenus] = useState<Menu[]>([]);
+  const [pages, setPages] = useState<Page[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchMenus = useCallback(async () => {
@@ -105,14 +109,18 @@ export const useContent = () => {
     }
   }, [fetchPages]);
 
-  const handleReorderMenus = useCallback(async (reorderedMenus: any[]) => {
+  const handleReorderMenus = useCallback(async (reorderedMenus: Menu[]) => {
     try {
       const { error } = await supabase
         .from("menus")
         .upsert(
           reorderedMenus.map(menu => ({
             id: menu.id,
-            order_index: menu.order_index
+            order_index: menu.order_index,
+            title: menu.title,
+            slug: menu.slug,
+            user_id: menu.user_id,
+            parent_category: menu.parent_category
           }))
         );
 
@@ -129,14 +137,20 @@ export const useContent = () => {
     }
   }, []);
 
-  const handleReorderPages = useCallback(async (reorderedPages: any[]) => {
+  const handleReorderPages = useCallback(async (reorderedPages: Page[]) => {
     try {
       const { error } = await supabase
         .from("pages")
         .upsert(
           reorderedPages.map(page => ({
             id: page.id,
-            order_index: page.order_index
+            order_index: page.order_index,
+            title: page.title,
+            slug: page.slug,
+            content: page.content,
+            menu_id: page.menu_id,
+            parent_id: page.parent_id,
+            user_id: page.user_id
           }))
         );
 
