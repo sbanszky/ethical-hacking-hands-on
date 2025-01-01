@@ -8,6 +8,10 @@ const MenuPages = () => {
   const { menuId } = useParams();
   const { menus, pages, isLoading } = useContent();
 
+  console.log("MenuPages - Current menuId:", menuId);
+  console.log("MenuPages - Available pages:", pages);
+  console.log("MenuPages - Pages content check:", pages.map(p => ({ id: p.id, title: p.title, content: p.content })));
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -18,6 +22,8 @@ const MenuPages = () => {
 
   const menu = menus.find(m => m.id === menuId);
   const menuPages = pages.filter(page => page.menu_id === menuId);
+
+  console.log("MenuPages - Filtered pages for menu:", menuPages);
 
   if (!menu) {
     return (
@@ -50,15 +56,21 @@ const MenuPages = () => {
           <div className="space-y-6">
             {menuPages.map(page => (
               <div key={page.id} className="bg-gray-800 rounded-lg overflow-hidden">
-                <Link
-                  to={`/pages/${page.slug}`}
-                  className="block p-4 hover:bg-gray-700 transition-colors"
-                >
-                  <h2 className="text-lg font-medium text-white mb-2">{page.title}</h2>
-                </Link>
-                <div className="px-4 pb-4">
-                  <div className="bg-gray-900 p-4 rounded-lg whitespace-pre-wrap text-gray-300">
-                    {page.content || 'No content available'}
+                <div className="p-4">
+                  <Link
+                    to={`/pages/${page.slug}`}
+                    className="block hover:text-blue-400 transition-colors"
+                  >
+                    <h2 className="text-xl font-semibold mb-4">{page.title}</h2>
+                  </Link>
+                  <div className="bg-gray-900 p-4 rounded-lg">
+                    <div className="prose prose-invert max-w-none">
+                      {page.content ? (
+                        <div className="whitespace-pre-wrap text-gray-300">{page.content}</div>
+                      ) : (
+                        <p className="text-gray-500 italic">No content available</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
