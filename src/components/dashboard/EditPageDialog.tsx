@@ -10,6 +10,7 @@ import { Database, Json } from "@/integrations/supabase/types";
 import { MarkedSection } from "@/types/marked-sections";
 import TextSelectionArea from "./TextSelectionArea";
 import MarkedSections from "./MarkedSections";
+import ImageUploadButton from "./ImageUploadButton";
 
 type Menu = Database['public']['Tables']['menus']['Row'];
 type Page = Database['public']['Tables']['pages']['Row'];
@@ -115,16 +116,28 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
             </SelectContent>
           </Select>
           
-          <TextSelectionArea
-            content={editedPage.content}
-            onMarkSection={(section) => {
-              setEditedPage({
-                ...editedPage,
-                markedSections: [...editedPage.markedSections, section]
-              });
-              toast.success("Code section marked successfully");
-            }}
-          />
+          <div className="relative">
+            <TextSelectionArea
+              content={editedPage.content}
+              onMarkSection={(section) => {
+                setEditedPage({
+                  ...editedPage,
+                  markedSections: [...editedPage.markedSections, section]
+                });
+                toast.success("Code section marked successfully");
+              }}
+            />
+            <div className="absolute top-2 right-2">
+              <ImageUploadButton
+                onImageUploaded={(markdown) => {
+                  setEditedPage(prev => ({
+                    ...prev,
+                    content: prev.content + markdown
+                  }));
+                }}
+              />
+            </div>
+          </div>
           
           <MarkedSections
             sections={editedPage.markedSections}
