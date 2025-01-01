@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { GripVertical, ChevronDown, ChevronRight } from "lucide-react";
+import { GripVertical, ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { useState } from "react";
 
 interface MenuListProps {
@@ -92,13 +92,23 @@ const MenuList = ({ menus, pages, onDeleteMenu, onReorderMenus }: MenuListProps)
                     <span className="text-sm text-gray-400">{menu.parent_category}</span>
                   </div>
                 </div>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => onDeleteMenu(menu.id)}
-                >
-                  Delete
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => console.log("Edit menu:", menu.id)}
+                    className="px-2"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => onDeleteMenu(menu.id)}
+                  >
+                    Delete
+                  </Button>
+                </div>
               </div>
 
               {isExpanded && menuPages.length > 0 && (

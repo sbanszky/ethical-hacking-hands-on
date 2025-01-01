@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Pencil } from "lucide-react";
 import { useState } from "react";
 
 interface PageListProps {
@@ -61,13 +61,23 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
                 </span>
               </div>
             </div>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => onDeletePage(page.id)}
-            >
-              Delete
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => console.log("Edit page:", page.id)}
+                className="px-2"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => onDeletePage(page.id)}
+              >
+                Delete
+              </Button>
+            </div>
           </div>
         ))
       ) : (
