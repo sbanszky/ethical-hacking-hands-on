@@ -45,15 +45,49 @@ const Navbar = () => {
 
   const handleSignIn = async () => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // First try to sign in
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: 'blueStone@example.com',
         password: 'SuperSecret@2025'
       });
 
-      if (error) {
-        console.error("Sign in error:", error);
-        toast.error("Error signing in. Please try again.");
-        return;
+      if (signInError) {
+        // If sign in fails, try to sign up
+        if (signInError.message.includes('Invalid login credentials')) {
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: 'blueStone@example.com',
+            password: 'SuperSecret@2025',
+          });
+
+          if (signUpError) {
+            console.error("Sign up error:", signUpError);
+            toast.error("Error creating account. Please try again.");
+            return;
+          }
+
+          // After successful signup, try to create profile
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert([
+              {
+                id: signUpData.user?.id,
+                username: 'blueStone',
+                role: 'admin'
+              }
+            ]);
+
+          if (profileError) {
+            // If profile creation fails, it might be because it already exists
+            console.error("Profile creation error:", profileError);
+            // We can continue since the user was created successfully
+          }
+
+          toast.success("Account created successfully");
+        } else {
+          console.error("Sign in error:", signInError);
+          toast.error("Error signing in. Please try again.");
+          return;
+        }
       }
 
       toast.success("Successfully signed in");
