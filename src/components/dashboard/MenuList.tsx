@@ -12,6 +12,7 @@ const MenuList = ({ menus, onDeleteMenu, onReorderMenus }: MenuListProps) => {
   const [draggedItem, setDraggedItem] = useState<any>(null);
 
   const handleDragStart = (menu: any) => {
+    console.log("Drag started with menu:", menu);
     setDraggedItem(menu);
   };
 
@@ -26,13 +27,19 @@ const MenuList = ({ menus, onDeleteMenu, onReorderMenus }: MenuListProps) => {
     reorderedMenus.splice(draggedIndex, 1);
     reorderedMenus.splice(targetIndex, 0, draggedItem);
 
-    // Update order_index for each menu
+    // Update order_index for each menu while preserving all other properties
     const updatedMenus = reorderedMenus.map((menu, index) => ({
       ...menu,
       order_index: index
     }));
 
+    console.log("Reordered menus:", updatedMenus);
     onReorderMenus(updatedMenus);
+  };
+
+  const handleDragEnd = () => {
+    console.log("Drag ended");
+    setDraggedItem(null);
   };
 
   return (
@@ -45,6 +52,7 @@ const MenuList = ({ menus, onDeleteMenu, onReorderMenus }: MenuListProps) => {
             draggable
             onDragStart={() => handleDragStart(menu)}
             onDragOver={(e) => handleDragOver(e, menu)}
+            onDragEnd={handleDragEnd}
           >
             <div className="flex items-center gap-2">
               <GripVertical className="h-4 w-4 text-gray-400" />

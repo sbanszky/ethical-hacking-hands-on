@@ -111,18 +111,24 @@ export const useContent = () => {
 
   const handleReorderMenus = useCallback(async (reorderedMenus: Menu[]) => {
     try {
+      console.log("Attempting to reorder menus:", reorderedMenus);
+      
+      const updates = reorderedMenus.map(menu => ({
+        id: menu.id,
+        order_index: menu.order_index,
+        title: menu.title,
+        slug: menu.slug,
+        parent_category: menu.parent_category,
+        user_id: menu.user_id
+      }));
+
+      console.log("Sending updates to Supabase:", updates);
+
       const { error } = await supabase
         .from("menus")
-        .upsert(
-          reorderedMenus.map(menu => ({
-            id: menu.id,
-            order_index: menu.order_index,
-            title: menu.title,
-            slug: menu.slug,
-            user_id: menu.user_id,
-            parent_category: menu.parent_category
-          }))
-        );
+        .upsert(updates, {
+          onConflict: 'id'
+        });
 
       if (error) {
         console.error("Error reordering menus:", error);
@@ -130,7 +136,9 @@ export const useContent = () => {
         return;
       }
 
+      console.log("Successfully reordered menus");
       setMenus(reorderedMenus);
+      toast.success("Menus reordered successfully");
     } catch (error) {
       console.error("Error in handleReorderMenus:", error);
       toast.error("Failed to reorder menus");
