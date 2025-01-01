@@ -22,7 +22,8 @@ const UserManagement = () => {
         role,
         username,
         avatar_url,
-        created_at
+        created_at,
+        email
       `)
       .order("created_at");
 
@@ -52,7 +53,10 @@ const UserManagement = () => {
       <div className="space-y-4">
         {profiles.map((profile) => (
           <div key={profile.id} className="flex items-center justify-between p-3 bg-gray-700 rounded">
-            <span>{profile.username || "No username set"}</span>
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-300">{profile.email}</span>
+              <span>{profile.username || "No username set"}</span>
+            </div>
             <UserRoleSelect profile={profile} onRoleUpdate={fetchProfiles} />
           </div>
         ))}

@@ -31,7 +31,7 @@ export const useAuthCheck = () => {
 
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
-          .select("role")
+          .select("role, username")
           .eq("id", session.user.id)
           .maybeSingle();
 
@@ -50,7 +50,8 @@ export const useAuthCheck = () => {
             .from("profiles")
             .insert([{ 
               id: session.user.id,
-              role: 'reader'
+              role: 'reader',
+              email: session.user.email
             }]);
 
           if (insertError) {
@@ -61,6 +62,9 @@ export const useAuthCheck = () => {
           }
 
           setUserRole('reader');
+          navigate("/username-setup");
+        } else if (!profile.username) {
+          navigate("/username-setup");
         } else {
           setUserRole(profile.role);
         }
