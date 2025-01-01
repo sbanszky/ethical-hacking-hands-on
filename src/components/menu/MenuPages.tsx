@@ -3,6 +3,7 @@ import { useContent } from "@/hooks/useContent";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MarkedSection } from "@/types/marked-sections";
 
 const MenuPages = () => {
   const { menuId } = useParams();
@@ -68,10 +69,10 @@ const MenuPages = () => {
                       <div 
                         className="prose prose-invert max-w-none prose-p:text-gray-300"
                       >
-                        {page.marked_sections && page.marked_sections.length > 0 ? (
+                        {page.marked_sections && (page.marked_sections as MarkedSection[]).length > 0 ? (
                           <div>
                             {page.content.split('').map((char, index) => {
-                              const isInMarkedSection = page.marked_sections.some(
+                              const isInMarkedSection = (page.marked_sections as MarkedSection[]).some(
                                 section => index >= section.start && index < section.end
                               );
                               if (isInMarkedSection) {
