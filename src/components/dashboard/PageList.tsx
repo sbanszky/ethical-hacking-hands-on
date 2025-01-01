@@ -50,6 +50,16 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
     return menu ? menu.title : 'No menu';
   };
 
+  const handleMarkSection = (page: Page, section: MarkedSection) => {
+    const currentSections = (page.marked_sections as unknown as MarkedSection[]) || [];
+    const updatedPage = {
+      ...page,
+      marked_sections: [...currentSections, section] as unknown as Json
+    };
+    onReorderPages(pages.map(p => p.id === page.id ? updatedPage : p));
+    toast.success("Code section marked successfully");
+  };
+
   return (
     <div className="space-y-4 mt-4">
       {pages && pages.length > 0 ? (
@@ -90,15 +100,7 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
             <div className="p-4 space-y-4">
               <TextSelectionArea 
                 content={page.content || ''} 
-                onMarkSection={(section) => {
-                  const currentSections = (page.marked_sections as unknown as MarkedSection[]) || [];
-                  const updatedPage = {
-                    ...page,
-                    marked_sections: [...currentSections, section]
-                  };
-                  onReorderPages([...pages.map(p => p.id === page.id ? updatedPage : p)]);
-                  toast.success("Code section marked successfully");
-                }}
+                onMarkSection={(section) => handleMarkSection(page, section)}
               />
               
               <MarkedSections 
