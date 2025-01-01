@@ -20,6 +20,7 @@ const Dashboard = () => {
   } = useContent();
 
   useEffect(() => {
+    console.log("Dashboard: Auth state check", { user, isAuthLoading });
     if (!isAuthLoading && !user) {
       console.log("Dashboard: No authenticated user, redirecting to login");
       navigate("/login");
@@ -29,13 +30,13 @@ const Dashboard = () => {
   if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <LoadingSpinner message="Checking authentication..." />
+        <LoadingSpinner size="lg" message="Checking authentication..." />
       </div>
     );
   }
 
   if (!user) {
-    console.log("Dashboard: No user found");
+    console.log("Dashboard: No user found, redirecting...");
     return null;
   }
 
@@ -61,7 +62,7 @@ const Dashboard = () => {
         
         {isContentLoading ? (
           <div className="flex items-center justify-center py-12">
-            <LoadingSpinner message="Loading content..." />
+            <LoadingSpinner size="lg" message="Loading content..." />
           </div>
         ) : (
           <ContentManager

@@ -1,14 +1,19 @@
-import { Loader2 } from "lucide-react";
-
 interface LoadingSpinnerProps {
   message?: string;
+  size?: "sm" | "md" | "lg";
 }
 
-export const LoadingSpinner = ({ message = "Loading..." }: LoadingSpinnerProps) => {
+export const LoadingSpinner = ({ message, size = "md" }: LoadingSpinnerProps) => {
+  const sizeClasses = {
+    sm: "w-4 h-4",
+    md: "w-6 h-6",
+    lg: "w-8 h-8"
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-      <Loader2 className="h-12 w-12 animate-spin text-hack-accent" />
-      <p className="text-hack-accent">{message}</p>
+    <div className="flex flex-col items-center justify-center gap-3">
+      <div className={`animate-spin rounded-full border-4 border-gray-300 border-t-hack-accent ${sizeClasses[size]}`} />
+      {message && <p className="text-gray-400 text-sm">{message}</p>}
     </div>
   );
 };
