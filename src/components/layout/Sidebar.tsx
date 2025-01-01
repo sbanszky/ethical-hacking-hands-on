@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Book, Folder, HelpCircle, ChevronDown, ChevronRight, File } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useContent } from "@/hooks/useContent";
+import { Database } from "@/integrations/supabase/types";
+
+type Menu = Database['public']['Tables']['menus']['Row'];
 
 interface MenuItem {
   id: string;
@@ -61,7 +64,7 @@ const Sidebar = () => {
   console.log("Sidebar menus:", menus);
 
   // Group menus by parent_category
-  const groupedMenus = menus.reduce((acc: Record<string, any[]>, menu) => {
+  const groupedMenus = (menus as Menu[]).reduce((acc: Record<string, Menu[]>, menu) => {
     const category = menu.parent_category || 'uncategorized';
     if (!acc[category]) {
       acc[category] = [];
