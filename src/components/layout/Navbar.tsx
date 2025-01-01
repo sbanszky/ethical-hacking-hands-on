@@ -80,9 +80,12 @@ const Navbar = () => {
                         target.style.visibility = "visible";
                       }}
                       onMouseLeave={(e) => {
-                        const target = e.currentTarget;
-                        target.style.opacity = "0";
-                        target.style.visibility = "hidden";
+                        // Only hide if we're not hovering the parent group
+                        if (!e.currentTarget.parentElement?.matches(':hover')) {
+                          const target = e.currentTarget;
+                          target.style.opacity = "0";
+                          target.style.visibility = "hidden";
+                        }
                       }}
                     >
                       {item.menus.map((menu) => (
