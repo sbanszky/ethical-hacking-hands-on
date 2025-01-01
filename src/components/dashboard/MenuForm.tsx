@@ -4,6 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+type Menu = Database['public']['Tables']['menus']['Row'];
 
 const PARENT_CATEGORIES = [
   { id: "documentation", title: "Documentation" },
@@ -20,11 +23,21 @@ const MenuForm = ({ onMenuCreated }: { onMenuCreated: () => void }) => {
 
   const handleCreateMenu = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Creating menu with data:", newMenu);
+    
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      toast.error("You must be logged in to create a menu");
+      return;
+    }
 
     if (!newMenu.parent_category) {
       toast.error("Please select a parent category");
+      return;
+    }
+
+    if (!newMenu.title || !newMenu.slug) {
+      toast.error("Please fill in all fields");
       return;
     }
 
@@ -56,16 +69,19 @@ const MenuForm = ({ onMenuCreated }: { onMenuCreated: () => void }) => {
         value={newMenu.title}
         onChange={(e) => setNewMenu({ ...newMenu, title: e.target.value })}
         className="bg-gray-700"
+        required
       />
       <Input
         placeholder="Menu Slug"
         value={newMenu.slug}
         onChange={(e) => setNewMenu({ ...newMenu, slug: e.target.value })}
         className="bg-gray-700"
+        required
       />
       <Select
         value={newMenu.parent_category}
         onValueChange={(value) => setNewMenu({ ...newMenu, parent_category: value })}
+        required
       >
         <SelectTrigger className="bg-gray-700">
           <SelectValue placeholder="Select Parent Category" />

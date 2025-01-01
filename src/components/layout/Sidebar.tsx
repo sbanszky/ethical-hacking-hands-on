@@ -64,7 +64,7 @@ const Sidebar = () => {
   console.log("Sidebar menus:", menus);
 
   // Group menus by parent_category
-  const groupedMenus = (menus as Menu[]).reduce((acc: Record<string, Menu[]>, menu) => {
+  const groupedMenus = (menus || []).reduce((acc: Record<string, Menu[]>, menu: Menu) => {
     const category = menu.parent_category || 'uncategorized';
     if (!acc[category]) {
       acc[category] = [];
@@ -72,6 +72,8 @@ const Sidebar = () => {
     acc[category].push(menu);
     return acc;
   }, {});
+
+  console.log("Grouped menus:", groupedMenus);
 
   const menuItems: MenuItem[] = Object.entries(groupedMenus).map(([category, categoryMenus]) => ({
     id: category,
