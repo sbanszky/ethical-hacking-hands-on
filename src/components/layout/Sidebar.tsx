@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Book, Tool, HelpCircle, ChevronDown, ChevronRight, File } from "lucide-react";
+import { Book, Folder, HelpCircle, ChevronDown, ChevronRight, File } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MenuItem {
@@ -22,7 +22,7 @@ const menuItems: MenuItem[] = [
   {
     id: "tools",
     title: "Tools",
-    icon: <Tool className="h-4 w-4" />,
+    icon: <Folder className="h-4 w-4" />,
     children: [
       { id: "nmap", title: "Nmap", icon: <File className="h-4 w-4" /> },
       { id: "metasploit", title: "Metasploit", icon: <File className="h-4 w-4" /> },
