@@ -7,6 +7,7 @@ import { useAuthCheck } from "@/hooks/useAuthCheck";
 import { useContent } from "@/hooks/useContent";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const Dashboard = () => {
       
       if (sessionError) {
         console.error("Session error in Dashboard:", sessionError);
+        toast.error("Session error. Please log in again.");
         navigate("/login");
         return;
       }
@@ -47,6 +49,7 @@ const Dashboard = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed in Dashboard:", event, session);
       if (event === 'SIGNED_OUT' || !session) {
+        toast.info("Session ended. Please log in again.");
         navigate("/login");
       }
     });

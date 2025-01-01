@@ -16,6 +16,7 @@ export const useAuthCheck = () => {
         
         if (sessionError) {
           console.error("Session error:", sessionError);
+          toast.error("Authentication error. Please log in again.");
           navigate("/login");
           return;
         }
@@ -26,7 +27,6 @@ export const useAuthCheck = () => {
           return;
         }
 
-        // Fetch user profile with explicit UUID casting
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role")
@@ -41,7 +41,6 @@ export const useAuthCheck = () => {
           return;
         }
 
-        // If no profile exists, create one with reader role
         if (!profile) {
           console.log("No profile found, creating new profile with reader role");
           const { error: insertError } = await supabase
@@ -76,6 +75,8 @@ export const useAuthCheck = () => {
       console.log("Auth state changed in useAuthCheck:", event, session);
       if (event === 'SIGNED_OUT' || !session) {
         navigate("/login");
+      } else if (session) {
+        await checkAuth();
       }
     });
 
