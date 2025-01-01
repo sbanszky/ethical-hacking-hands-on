@@ -75,9 +75,10 @@ const MenuPages = () => {
                         {Array.isArray(page.marked_sections) && page.marked_sections.length > 0 ? (
                           <div>
                             {page.content.split('').map((char, index) => {
-                              const isInMarkedSection = Array.isArray(page.marked_sections) && 
-                                page.marked_sections.some(
-                                  (section: MarkedSection) => 
+                              const markedSections = page.marked_sections as MarkedSection[];
+                              const isInMarkedSection = Array.isArray(markedSections) && 
+                                markedSections.some(
+                                  (section) => 
                                     index >= section.start && index < section.end
                                 );
                               if (isInMarkedSection) {
