@@ -7,6 +7,7 @@ interface Profile {
   id: string;
   username: string | null;
   role: string;
+  email?: string;
 }
 
 const UserManagement = () => {
@@ -19,16 +20,28 @@ const UserManagement = () => {
   }, []);
 
   const fetchProfiles = async () => {
+    // Join profiles with auth.users to get emails
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select(`
+        *,
+        email:auth_users!inner(email)
+      `)
       .order("created_at");
 
     if (error) {
+      console.error("Error fetching users:", error);
       toast.error("Error fetching users");
       return;
     }
-    setProfiles(data);
+
+    // Transform the data to match our Profile interface
+    const transformedData = data.map((profile: any) => ({
+      ...profile,
+      email: profile.auth_users?.email
+    }));
+
+    setProfiles(transformedData);
   };
 
   const getCurrentUserRole = async () => {
@@ -74,7 +87,7 @@ const UserManagement = () => {
       <div className="space-y-4">
         {profiles.map((profile) => (
           <div key={profile.id} className="flex items-center justify-between p-3 bg-gray-700 rounded">
-            <span>{profile.username || "Unnamed User"}</span>
+            <span>{profile.email || "No email available"}</span>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-400">Current role: {profile.role}</span>
               <select
