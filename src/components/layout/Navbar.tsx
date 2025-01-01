@@ -11,6 +11,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const checkSession = async () => {
@@ -90,11 +91,34 @@ const Navbar = () => {
     }
   };
 
-  const menuItems = [
-    { title: "Documentation", href: "/docs" },
-    { title: "Tools", href: "/tools" },
-    { title: "How To", href: "/howto" },
-  ];
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Searching all content for:", searchQuery);
+    
+    try {
+      const [pagesResult, menusResult] = await Promise.all([
+        supabase
+          .from('pages')
+          .select('*')
+          .or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`),
+        supabase
+          .from('menus')
+          .select('*')
+          .ilike('title', `%${searchQuery}%`)
+      ]);
+
+      console.log("Search results:", { pages: pagesResult.data, menus: menusResult.data });
+      
+      // TODO: Implement search results display
+      // For now, we'll just show a toast with the number of results
+      const totalResults = (pagesResult.data?.length || 0) + (menusResult.data?.length || 0);
+      toast.info(`Found ${totalResults} results`);
+      
+    } catch (error) {
+      console.error("Search error:", error);
+      toast.error("Error performing search");
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-hack-background border-b border-gray-800 z-50">
@@ -102,29 +126,22 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
             <h1 className="text-white font-mono text-xl">HackNotes</h1>
-            <div className="hidden md:flex items-center gap-4">
-              {menuItems.map((item) => (
-                <Button
-                  key={item.title}
-                  variant="ghost"
-                  className="text-gray-300 hover:text-white"
-                  onClick={() => navigate(item.href)}
-                >
-                  {item.title}
-                </Button>
-              ))}
-            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="relative w-64 md:w-96">
-              <Input
-                type="search"
-                placeholder="Search documentation..."
-                className="w-full bg-gray-800 border-gray-700 text-white pl-10"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            </div>
+          <div className="flex items-center gap-4 flex-1 justify-end">
+            <form onSubmit={handleSearch} className="flex-1 max-w-xl">
+              <div className="relative">
+                <Input
+                  type="search"
+                  placeholder="Search site content..."
+                  className="w-full bg-gray-800 border-gray-700 text-white pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              </div>
+            </form>
+            
             {!isLoading && (
               user ? (
                 <div className="flex items-center gap-4">
