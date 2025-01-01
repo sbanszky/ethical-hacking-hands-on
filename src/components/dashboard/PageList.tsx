@@ -98,6 +98,11 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
             </div>
             
             <div className="p-4 space-y-4">
+              {/* Display the page content */}
+              <div className="bg-gray-800 p-4 rounded whitespace-pre-wrap">
+                {page.content || 'No content available'}
+              </div>
+              
               <TextSelectionArea 
                 content={page.content || ''} 
                 onMarkSection={(section) => handleMarkSection(page, section)}
