@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Navbar from "./components/layout/Navbar";
+import UsernameSetup from "./components/auth/UsernameSetup";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/username-setup" element={<UsernameSetup />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
