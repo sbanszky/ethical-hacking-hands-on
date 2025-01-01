@@ -36,7 +36,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (error) {
           console.error("Error fetching user role:", error);
-          toast.error("Error fetching user role");
           return "";
         }
 
@@ -50,23 +49,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const handleAuthChange = async (session: any) => {
       if (!mounted) return;
       
-      setIsLoading(true);
-      
       if (!session) {
-        console.log("AuthProvider: No session found");
+        console.log("AuthProvider: No session found, clearing state");
         setUser(null);
         setUserRole("");
         setIsLoading(false);
         return;
       }
 
-      console.log("AuthProvider: Session found, updating state");
-      const role = await checkUserRole(session.user.id);
-      
-      if (mounted) {
-        setUser(session.user);
-        setUserRole(role);
-        setIsLoading(false);
+      try {
+        console.log("AuthProvider: Session found, fetching role");
+        const role = await checkUserRole(session.user.id);
+        
+        if (mounted) {
+          setUser(session.user);
+          setUserRole(role);
+        }
+      } catch (error) {
+        console.error("Error in handleAuthChange:", error);
+        toast.error("Error checking authentication");
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 

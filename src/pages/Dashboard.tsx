@@ -20,11 +20,15 @@ const Dashboard = () => {
   } = useContent();
 
   useEffect(() => {
-    console.log("Dashboard: Auth state check", { user, isAuthLoading });
-    if (!isAuthLoading && !user) {
-      console.log("Dashboard: No authenticated user, redirecting to login");
-      navigate("/login");
-    }
+    const timeoutId = setTimeout(() => {
+      console.log("Dashboard: Auth state check", { user, isAuthLoading });
+      if (!isAuthLoading && !user) {
+        console.log("Dashboard: No authenticated user, redirecting to login");
+        navigate("/login");
+      }
+    }, 1000); // Add a small delay to prevent flash
+
+    return () => clearTimeout(timeoutId);
   }, [user, isAuthLoading, navigate]);
 
   if (isAuthLoading) {
@@ -37,6 +41,7 @@ const Dashboard = () => {
 
   if (!user) {
     console.log("Dashboard: No user found, redirecting...");
+    navigate("/login");
     return null;
   }
 
