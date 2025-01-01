@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { GripVertical, Copy, Check, Pencil } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { useState } from "react";
 import EditPageDialog from "./EditPageDialog";
 import { Database, Json } from "@/integrations/supabase/types";
-import { toast } from "sonner";
 import { MarkedSection } from "@/types/marked-sections";
+import TextSelectionArea from "./TextSelectionArea";
+import MarkedSections from "./MarkedSections";
+import { toast } from "sonner";
 
 type Menu = Database['public']['Tables']['menus']['Row'];
 type Page = Database['public']['Tables']['pages']['Row'];
@@ -18,8 +20,6 @@ interface PageListProps {
 
 const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps) => {
   const [draggedItem, setDraggedItem] = useState<any>(null);
-  const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
-  const [selectedText, setSelectedText] = useState<{ start: number; end: number } | null>(null);
 
   const handleDragStart = (page: any) => {
     setDraggedItem(page);
@@ -48,34 +48,6 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
     if (!menuId) return 'No menu';
     const menu = menus.find(m => m.id === menuId);
     return menu ? menu.title : 'No menu';
-  };
-
-  const handleCopySection = async (content: string, sectionIndex: number, pageId: string) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopiedStates({ ...copiedStates, [`${pageId}-${sectionIndex}`]: true });
-      toast.success("Code section copied to clipboard");
-      setTimeout(() => {
-        setCopiedStates({ ...copiedStates, [`${pageId}-${sectionIndex}`]: false });
-      }, 2000);
-    } catch (err) {
-      toast.error("Failed to copy code section");
-    }
-  };
-
-  const handleTextSelection = (e: React.MouseEvent<HTMLPreElement>, pageId: string) => {
-    const selection = window.getSelection();
-    if (selection && selection.toString().length > 0) {
-      const range = selection.getRangeAt(0);
-      const preElement = e.currentTarget;
-      const start = range.startOffset;
-      const end = range.endOffset;
-      
-      if (start !== end) {
-        setSelectedText({ start, end });
-        toast.success("Text selected! Click 'Mark Code' to save this section.");
-      }
-    }
   };
 
   return (
@@ -116,58 +88,22 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
             </div>
             
             <div className="p-4 space-y-4">
-              {/* Content preview with selection capability */}
-              <div className="relative bg-gray-800 rounded-lg p-4">
-                <h3 className="text-sm font-medium mb-2 text-gray-300">Page Content:</h3>
-                <pre
-                  className="text-gray-300 whitespace-pre-wrap cursor-text"
-                  onMouseUp={(e) => handleTextSelection(e, page.id)}
-                >
-                  <code>{page.content || 'No content'}</code>
-                </pre>
-                {selectedText && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => {
-                      const content = page.content?.substring(selectedText.start, selectedText.end);
-                      if (content) {
-                        handleCopySection(content, 0, page.id);
-                      }
-                      setSelectedText(null);
-                    }}
-                  >
-                    Mark Code
-                  </Button>
-                )}
-              </div>
-
-              {/* Marked sections */}
-              {page.marked_sections && (page.marked_sections as unknown as MarkedSection[]).length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-gray-300">Marked Code Sections:</h4>
-                  {(page.marked_sections as unknown as MarkedSection[]).map((section, index) => (
-                    <div key={index} className="relative bg-gray-800 p-4 rounded">
-                      <pre className="text-gray-300 whitespace-pre-wrap">
-                        <code>{section.content}</code>
-                      </pre>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="absolute top-2 right-2"
-                        onClick={() => handleCopySection(section.content, index, page.id)}
-                      >
-                        {copiedStates[`${page.id}-${index}`] ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <TextSelectionArea 
+                content={page.content || ''} 
+                onMarkSection={(section) => {
+                  const currentSections = (page.marked_sections as unknown as MarkedSection[]) || [];
+                  const updatedPage = {
+                    ...page,
+                    marked_sections: [...currentSections, section]
+                  };
+                  onReorderPages([...pages.map(p => p.id === page.id ? updatedPage : p)]);
+                  toast.success("Code section marked successfully");
+                }}
+              />
+              
+              <MarkedSections 
+                sections={(page.marked_sections as unknown as MarkedSection[]) || []}
+              />
             </div>
           </div>
         ))

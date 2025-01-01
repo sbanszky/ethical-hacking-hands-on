@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Database, Json } from "@/integrations/supabase/types";
 import { MarkedSection } from "@/types/marked-sections";
+import TextSelectionArea from "./TextSelectionArea";
+import MarkedSections from "./MarkedSections";
 
 type Menu = Database['public']['Tables']['menus']['Row'];
 type Page = Database['public']['Tables']['pages']['Row'];
@@ -28,12 +29,8 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
     menu_id: page.menu_id || "",
     markedSections: (page.marked_sections as unknown as MarkedSection[]) || []
   });
-  const [selectionStart, setSelectionStart] = useState<number | null>(null);
-  const [selectionEnd, setSelectionEnd] = useState<number | null>(null);
 
   const handleUpdatePage = async () => {
-    console.log("Updating page with data:", editedPage);
-    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error("You must be logged in to update a page");
@@ -78,49 +75,6 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
     onPageUpdated(updatedPages);
   };
 
-  const handleTextSelection = () => {
-    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      if (start !== end) {
-        setSelectionStart(start);
-        setSelectionEnd(end);
-        toast.success("Text selected! Click 'Mark Selected Code' to save this section.");
-      }
-    }
-  };
-
-  const markSelectedCode = () => {
-    if (selectionStart !== null && selectionEnd !== null) {
-      const selectedContent = editedPage.content.substring(selectionStart, selectionEnd);
-      const newMarkedSection = {
-        start: selectionStart,
-        end: selectionEnd,
-        content: selectedContent
-      };
-      
-      setEditedPage({
-        ...editedPage,
-        markedSections: [...editedPage.markedSections, newMarkedSection]
-      });
-      
-      setSelectionStart(null);
-      setSelectionEnd(null);
-      toast.success("Code section marked successfully");
-    }
-  };
-
-  const removeMarkedSection = (index: number) => {
-    const updatedSections = [...editedPage.markedSections];
-    updatedSections.splice(index, 1);
-    setEditedPage({
-      ...editedPage,
-      markedSections: updatedSections
-    });
-    toast.success("Marked section removed");
-  };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -160,43 +114,30 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
               ))}
             </SelectContent>
           </Select>
-          <div className="space-y-2">
-            <Textarea
-              placeholder="Page Content"
-              value={editedPage.content}
-              onChange={(e) => setEditedPage({ ...editedPage, content: e.target.value })}
-              onSelect={handleTextSelection}
-              className="bg-gray-700 min-h-[300px]"
-            />
-            {selectionStart !== null && selectionEnd !== null && (
-              <Button onClick={markSelectedCode} className="w-full">
-                Mark Selected Code
-              </Button>
-            )}
-          </div>
           
-          {editedPage.markedSections.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Marked Code Sections</h3>
-              <div className="space-y-2">
-                {editedPage.markedSections.map((section, index) => (
-                  <div key={index} className="bg-gray-700 p-2 rounded flex justify-between items-start">
-                    <pre className="text-sm overflow-x-auto">
-                      <code>{section.content}</code>
-                    </pre>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removeMarkedSection(index)}
-                      className="ml-2"
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <TextSelectionArea
+            content={editedPage.content}
+            onMarkSection={(section) => {
+              setEditedPage({
+                ...editedPage,
+                markedSections: [...editedPage.markedSections, section]
+              });
+              toast.success("Code section marked successfully");
+            }}
+          />
+          
+          <MarkedSections
+            sections={editedPage.markedSections}
+            onRemoveSection={(index) => {
+              const updatedSections = [...editedPage.markedSections];
+              updatedSections.splice(index, 1);
+              setEditedPage({
+                ...editedPage,
+                markedSections: updatedSections
+              });
+              toast.success("Marked section removed");
+            }}
+          />
           
           <Button onClick={handleUpdatePage} className="w-full">
             Update Page
