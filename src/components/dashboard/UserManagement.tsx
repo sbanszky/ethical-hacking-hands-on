@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Profile } from "@/types/profile";
 import { useUserRole } from "@/hooks/useUserRole";
 import { UserRoleSelect } from "./UserRoleSelect";
+import { User } from "@supabase/supabase-js";
 
 const UserManagement = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -38,8 +39,8 @@ const UserManagement = () => {
     
     if (userError) {
       console.error("Error fetching user emails:", userError);
-    } else if (userData) {
-      userData.users.forEach(user => {
+    } else if (userData?.users) {
+      userData.users.forEach((user: User) => {
         userEmails.set(user.id, user.email || "No email available");
       });
     }
