@@ -5,10 +5,12 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useContent } from "@/hooks/useContent";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const { menus } = useContent();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +39,20 @@ const Navbar = () => {
     }
   };
 
+  // Group menus by parent category
+  const groupedMenus = menus.reduce((acc: Record<string, typeof menus>, menu) => {
+    const category = menu.parent_category || 'uncategorized';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(menu);
+    return acc;
+  }, {});
+
   const menuItems = [
-    { title: "Documentation", href: "/docs" },
-    { title: "Tools", href: "/tools" },
-    { title: "How To", href: "/howto" },
+    { title: "Documentation", href: "/docs", menus: groupedMenus['documentation'] || [] },
+    { title: "Tools", href: "/tools", menus: groupedMenus['tools'] || [] },
+    { title: "How To", href: "/howto", menus: groupedMenus['howto'] || [] },
   ];
 
   return (
@@ -51,14 +63,29 @@ const Navbar = () => {
             <h1 className="text-white font-mono text-xl">HackNotes</h1>
             <div className="hidden md:flex items-center gap-4">
               {menuItems.map((item) => (
-                <Button
-                  key={item.title}
-                  variant="ghost"
-                  className="text-gray-300 hover:text-white"
-                  onClick={() => navigate(item.href)}
-                >
-                  {item.title}
-                </Button>
+                <div key={item.title} className="relative group">
+                  <Button
+                    variant="ghost"
+                    className="text-gray-300 hover:text-white"
+                    onClick={() => navigate(item.href)}
+                  >
+                    {item.title}
+                  </Button>
+                  {item.menus.length > 0 && (
+                    <div className="absolute left-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg hidden group-hover:block">
+                      {item.menus.map((menu) => (
+                        <Button
+                          key={menu.id}
+                          variant="ghost"
+                          className="w-full text-left text-gray-300 hover:text-white hover:bg-gray-700"
+                          onClick={() => navigate(`${item.href}/${menu.slug}`)}
+                        >
+                          {menu.title}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>

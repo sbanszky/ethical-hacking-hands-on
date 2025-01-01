@@ -33,10 +33,18 @@ const PageForm = ({
   const handleCreatePage = async (e: React.FormEvent) => {
     e.preventDefault();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      toast.error("You must be logged in to create a page");
+      return;
+    }
 
     if (!newPage.parent_category) {
       toast.error("Please select a parent category");
+      return;
+    }
+
+    if (!newPage.title || !newPage.slug) {
+      toast.error("Title and slug are required");
       return;
     }
 
@@ -44,7 +52,6 @@ const PageForm = ({
       { 
         ...newPage,
         user_id: user.id,
-        parent_category: newPage.parent_category
       },
     ]).select();
 
@@ -60,11 +67,13 @@ const PageForm = ({
     onPageCreated();
   };
 
+  // Filter menus based on selected parent category
   const filteredMenus = menus.filter(menu => 
     menu.parent_category === newPage.parent_category
   );
 
-  console.log("Available menus for category:", newPage.parent_category, filteredMenus);
+  console.log("Selected parent category:", newPage.parent_category);
+  console.log("Available menus for category:", filteredMenus);
 
   return (
     <form onSubmit={handleCreatePage} className="mb-6 space-y-4">
@@ -73,16 +82,19 @@ const PageForm = ({
         value={newPage.title}
         onChange={(e) => setNewPage({ ...newPage, title: e.target.value })}
         className="bg-gray-700"
+        required
       />
       <Input
         placeholder="Page Slug"
         value={newPage.slug}
         onChange={(e) => setNewPage({ ...newPage, slug: e.target.value })}
         className="bg-gray-700"
+        required
       />
       <Select
         value={newPage.parent_category}
         onValueChange={(value) => setNewPage({ ...newPage, parent_category: value, menu_id: "" })}
+        required
       >
         <SelectTrigger className="bg-gray-700">
           <SelectValue placeholder="Select Parent Category" />
@@ -95,7 +107,7 @@ const PageForm = ({
           ))}
         </SelectContent>
       </Select>
-      {newPage.parent_category && (
+      {newPage.parent_category && filteredMenus.length > 0 && (
         <Select
           value={newPage.menu_id}
           onValueChange={(value) => setNewPage({ ...newPage, menu_id: value })}
