@@ -142,7 +142,7 @@ const PageForm = ({
         placeholder="Page Content"
         value={newPage.content}
         onChange={(e) => setNewPage({ ...newPage, content: e.target.value })}
-        className="bg-gray-700"
+        className="bg-gray-700 min-h-[400px]"
       />
       <Button type="submit" className="w-full">Create Page</Button>
     </form>

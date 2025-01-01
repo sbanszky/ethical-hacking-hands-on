@@ -117,7 +117,7 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
             placeholder="Page Content"
             value={editedPage.content}
             onChange={(e) => setEditedPage({ ...editedPage, content: e.target.value })}
-            className="bg-gray-700"
+            className="bg-gray-700 min-h-[400px]"
           />
           <Button onClick={handleUpdatePage} className="w-full">
             Update Page
