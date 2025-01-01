@@ -2,94 +2,13 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { User } from "@supabase/supabase-js";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("Initial session check:", session);
-        
-        if (error) {
-          console.error("Session error:", error);
-          setUser(null);
-          return;
-        }
-        
-        setUser(session?.user ?? null);
-      } catch (error) {
-        console.error("Session check error:", error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleSignIn = async () => {
-    try {
-      setIsLoading(true);
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: 'blueStone@example.com',
-        password: 'SuperSecret@2025'
-      });
-
-      if (signInError) {
-        console.error("Sign in error:", signInError);
-        toast.error("Error signing in. Please try again.");
-        return;
-      }
-
-      toast.success("Successfully signed in");
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Unexpected error during sign in:", error);
-      toast.error("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Sign out error:", error);
-        toast.error("Error signing out. Please try again.");
-        return;
-      }
-      console.log("Successfully signed out");
-      setUser(null);
-      navigate("/");
-      toast.success("Successfully signed out");
-    } catch (error) {
-      console.error("Unexpected error during sign out:", error);
-      toast.error("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,25 +77,13 @@ const Navbar = () => {
               </div>
             </form>
             
-            {!isLoading && (
-              <Button
-                variant="default"
-                className="bg-hack-accent hover:bg-hack-accent/90"
-                onClick={user ? () => navigate("/dashboard") : handleSignIn}
-              >
-                Dashboard
-              </Button>
-            )}
-            
-            {!isLoading && user && (
-              <Button
-                variant="ghost"
-                className="text-gray-300 hover:text-white"
-                onClick={handleSignOut}
-              >
-                Sign Out
-              </Button>
-            )}
+            <Button
+              variant="default"
+              className="bg-hack-accent hover:bg-hack-accent/90"
+              onClick={() => navigate("/dashboard")}
+            >
+              Dashboard
+            </Button>
           </div>
         </div>
       </div>
