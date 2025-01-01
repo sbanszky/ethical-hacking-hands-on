@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
 const Navbar = () => {
@@ -12,17 +13,36 @@ const Navbar = () => {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session);
       setUser(session?.user ?? null);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session);
       setUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sign out error:", error);
+        toast.error("Error signing out. Please try again.");
+        return;
+      }
+      console.log("Successfully signed out");
+      navigate("/");
+      toast.success("Successfully signed out");
+    } catch (error) {
+      console.error("Unexpected error during sign out:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    }
+  };
 
   const menuItems = [
     { title: "Documentation", href: "/docs" },
@@ -71,7 +91,7 @@ const Navbar = () => {
                 <Button
                   variant="ghost"
                   className="text-gray-300 hover:text-white"
-                  onClick={() => supabase.auth.signOut()}
+                  onClick={handleSignOut}
                 >
                   Sign Out
                 </Button>
