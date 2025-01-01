@@ -53,41 +53,67 @@ const Page = () => {
     }
   };
 
-  const renderMarkedSections = () => {
+  const renderContent = () => {
     const markedSections = page.marked_sections as unknown as MarkedSection[];
-    if (!Array.isArray(markedSections) || markedSections.length === 0) return null;
+    if (!Array.isArray(markedSections) || markedSections.length === 0) {
+      return <div className="text-white whitespace-pre-wrap">{page.content}</div>;
+    }
 
-    return (
-      <div className="space-y-4 mt-4">
-        {markedSections.map((section, index) => (
-          <div key={index} className="relative bg-gray-900 border border-gray-700 p-4 rounded-lg">
-            <pre className="text-gray-300 whitespace-pre-wrap font-mono text-sm">
-              <code>{section.content}</code>
-            </pre>
-            <div className="absolute top-2 right-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="h-8 px-3"
-                onClick={() => handleCopySection(section.content, index)}
-              >
-                {copiedStates[index] ? (
-                  <>
-                    <Check className="h-4 w-4 mr-1" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4 mr-1" />
-                    Copy
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    // Sort sections by start position to ensure proper order
+    const sortedSections = [...markedSections].sort((a, b) => a.start - b.start);
+    let lastIndex = 0;
+    const contentParts = [];
+
+    sortedSections.forEach((section, index) => {
+      // Add text before the marked section
+      if (section.start > lastIndex) {
+        contentParts.push(
+          <span key={`text-${index}`} className="text-white">
+            {page.content.substring(lastIndex, section.start)}
+          </span>
+        );
+      }
+
+      // Add the marked section with its copy button
+      contentParts.push(
+        <div key={`marked-${index}`} className="relative inline-block group">
+          <span className="bg-gray-900 px-2 py-1 rounded font-mono text-gray-300">
+            {section.content}
+          </span>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="absolute -top-8 right-0 h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={() => handleCopySection(section.content, index)}
+          >
+            {copiedStates[index] ? (
+              <>
+                <Check className="h-3 w-3 mr-1" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="h-3 w-3 mr-1" />
+                Copy
+              </>
+            )}
+          </Button>
+        </div>
+      );
+
+      lastIndex = section.end;
+    });
+
+    // Add any remaining text after the last marked section
+    if (lastIndex < page.content.length) {
+      contentParts.push(
+        <span key="text-end" className="text-white">
+          {page.content.substring(lastIndex)}
+        </span>
+      );
+    }
+
+    return <div className="whitespace-pre-wrap">{contentParts}</div>;
   };
 
   return (
@@ -109,8 +135,7 @@ const Page = () => {
             <div className="p-6">
               <div className="mt-4 bg-gray-900 p-6 rounded-lg">
                 <div className="prose prose-invert max-w-none">
-                  <div className="text-white whitespace-pre-wrap">{page.content}</div>
-                  {renderMarkedSections()}
+                  {renderContent()}
                 </div>
               </div>
             </div>
