@@ -20,42 +20,28 @@ const Dashboard = () => {
   } = useContent();
 
   useEffect(() => {
-    console.log("Dashboard: Mounting, auth state:", { user, userRole, isAuthLoading });
-    
     if (!isAuthLoading && !user) {
-      console.log("Dashboard: No user found, redirecting to login");
+      console.log("Dashboard: No authenticated user found, redirecting to login");
       navigate("/login");
       return;
     }
 
-    const loadContent = async () => {
-      if (!isAuthLoading && userRole) {
-        console.log("Dashboard: Loading content for user with role:", userRole);
-        await Promise.all([fetchMenus(), fetchPages()]);
-      }
-    };
-
-    loadContent();
-  }, [fetchMenus, fetchPages, navigate, user, userRole, isAuthLoading]);
+    if (!isAuthLoading && user && userRole) {
+      console.log("Dashboard: Loading content for user:", user.id, "with role:", userRole);
+      Promise.all([fetchMenus(), fetchPages()]);
+    }
+  }, [user, userRole, isAuthLoading, navigate, fetchMenus, fetchPages]);
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen pt-20 bg-hack-background text-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <LoadingSpinner message="Checking authentication..." />
-        </div>
+      <div className="min-h-screen pt-20 bg-hack-background text-white flex items-center justify-center">
+        <LoadingSpinner message="Checking authentication..." />
       </div>
     );
   }
 
-  if (isContentLoading) {
-    return (
-      <div className="min-h-screen pt-20 bg-hack-background text-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <LoadingSpinner message="Loading content..." />
-        </div>
-      </div>
-    );
+  if (!user) {
+    return null; // Will redirect in useEffect
   }
 
   const canManageContent = userRole === "admin" || userRole === "editor";
@@ -78,7 +64,11 @@ const Dashboard = () => {
         
         {userRole === "admin" && <UserManagement />}
         
-        {canManageContent && (
+        {isContentLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <LoadingSpinner message="Loading content..." />
+          </div>
+        ) : (
           <ContentManager
             menus={menus}
             pages={pages}

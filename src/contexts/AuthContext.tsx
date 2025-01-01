@@ -34,12 +34,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (sessionError) {
           console.error("AuthProvider: Session error:", sessionError);
+          setUser(null);
+          setUserRole("");
           setIsLoading(false);
           return;
         }
 
         if (!session) {
           console.log("AuthProvider: No session found");
+          setUser(null);
+          setUserRole("");
           setIsLoading(false);
           return;
         }
@@ -49,47 +53,79 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .from("profiles")
           .select("role")
           .eq("id", session.user.id)
-          .maybeSingle();
+          .single();
 
         if (!mounted) return;
 
         if (profileError) {
           console.error("AuthProvider: Profile error:", profileError);
+          // If profile doesn't exist, create it with default role
+          if (profileError.code === "PGRST116") {
+            const { error: insertError } = await supabase
+              .from("profiles")
+              .insert([{
+                id: session.user.id,
+                role: "reader",
+                email: session.user.email
+              }]);
+
+            if (!mounted) return;
+
+            if (insertError) {
+              console.error("AuthProvider: Profile creation error:", insertError);
+              toast.error("Error creating user profile");
+              setUser(null);
+              setUserRole("");
+              setIsLoading(false);
+              return;
+            }
+
+            setUser(session.user);
+            setUserRole("reader");
+            setIsLoading(false);
+            return;
+          }
+          
           toast.error("Error fetching user profile");
+          setUser(null);
+          setUserRole("");
           setIsLoading(false);
           return;
         }
 
         setUser(session.user);
         setUserRole(profile?.role || "reader");
-        console.log("AuthProvider: Auth check complete", { role: profile?.role });
+        console.log("AuthProvider: Auth check complete", { user: session.user.id, role: profile?.role });
       } catch (error) {
         console.error("AuthProvider: Unexpected error:", error);
         if (mounted) {
           toast.error("An unexpected error occurred");
-        }
-      } finally {
-        if (mounted) {
+          setUser(null);
+          setUserRole("");
           setIsLoading(false);
         }
       }
     };
 
+    // Initial auth check
     checkAuth();
-
+    
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("AuthProvider: Auth state changed:", event);
       
       if (!mounted) return;
 
       if (event === "SIGNED_OUT" || !session) {
+        console.log("AuthProvider: User signed out or session ended");
         setUser(null);
         setUserRole("");
         setIsLoading(false);
         return;
       }
 
-      if (event === "SIGNED_IN" && session) {
+      if (event === "SIGNED_IN") {
+        console.log("AuthProvider: User signed in, checking auth...");
         setIsLoading(true);
         await checkAuth();
       }
