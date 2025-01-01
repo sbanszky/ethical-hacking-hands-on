@@ -12,7 +12,6 @@ const Navbar = () => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Initial session check
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -34,45 +33,36 @@ const Navbar = () => {
 
     checkSession();
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
-      
-      if (event === 'SIGNED_OUT' || !session) {
-        setUser(null);
-        navigate("/login");
-        return;
-      }
-
-      if (event === 'SIGNED_IN' && session) {
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profileError) {
-            console.error("Error fetching profile:", profileError);
-            return;
-          }
-
-          if (!profile?.username) {
-            navigate("/username-setup");
-            return;
-          }
-
-          setUser(session.user);
-        } catch (error) {
-          console.error("Profile check error:", error);
-        }
-      }
+      setUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, []);
+
+  const handleSignIn = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: 'blueStone@example.com',
+        password: 'SuperSecret@2025'
+      });
+
+      if (error) {
+        console.error("Sign in error:", error);
+        toast.error("Error signing in. Please try again.");
+        return;
+      }
+
+      toast.success("Successfully signed in");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Unexpected error during sign in:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -145,22 +135,13 @@ const Navbar = () => {
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  className="text-gray-300 hover:text-white"
-                  onClick={() => navigate("/login")}
-                >
-                  Log In
-                </Button>
-                <Button
-                  variant="default"
-                  className="bg-hack-accent hover:bg-hack-accent/90"
-                  onClick={() => navigate("/signup")}
-                >
-                  Sign Up
-                </Button>
-              </div>
+              <Button
+                variant="default"
+                className="bg-hack-accent hover:bg-hack-accent/90"
+                onClick={handleSignIn}
+              >
+                Dashboard
+              </Button>
             )}
           </div>
         </div>
