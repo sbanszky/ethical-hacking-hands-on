@@ -11,6 +11,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const { menus } = useContent();
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +64,25 @@ const Navbar = () => {
             <h1 className="text-white font-mono text-xl">HackNotes</h1>
             <div className="hidden md:flex items-center gap-4">
               {menuItems.map((item) => (
-                <div key={item.title} className="relative group">
+                <div 
+                  key={item.title} 
+                  className="relative group"
+                  onMouseEnter={() => {
+                    console.log(`Mouse entered ${item.title}`);
+                    setActiveDropdown(item.title);
+                  }}
+                  onMouseLeave={(e) => {
+                    // Check if we're moving to another menu item or its dropdown
+                    const relatedTarget = e.relatedTarget as HTMLElement;
+                    const isMovingToDropdown = relatedTarget?.closest('.group') === e.currentTarget;
+                    const isMovingToAnotherMenuItem = relatedTarget?.closest('.group');
+                    
+                    if (!isMovingToDropdown && !isMovingToAnotherMenuItem) {
+                      console.log(`Mouse left ${item.title} completely`);
+                      setActiveDropdown(null);
+                    }
+                  }}
+                >
                   <Button
                     variant="ghost"
                     className="text-gray-300 hover:text-white"
@@ -71,22 +90,9 @@ const Navbar = () => {
                   >
                     {item.title}
                   </Button>
-                  {item.menus.length > 0 && (
+                  {item.menus.length > 0 && activeDropdown === item.title && (
                     <div 
-                      className="absolute left-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out"
-                      onMouseEnter={(e) => {
-                        const target = e.currentTarget;
-                        target.style.opacity = "1";
-                        target.style.visibility = "visible";
-                      }}
-                      onMouseLeave={(e) => {
-                        // Only hide if we're not hovering the parent group
-                        if (!e.currentTarget.parentElement?.matches(':hover')) {
-                          const target = e.currentTarget;
-                          target.style.opacity = "0";
-                          target.style.visibility = "hidden";
-                        }
-                      }}
+                      className="absolute left-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg"
                     >
                       {item.menus.map((menu) => (
                         <Button
