@@ -69,8 +69,11 @@ const PageForm = ({
     onPageCreated();
   };
 
-  // Show all available menus for debugging
-  console.log("All available menus:", menus.map(m => ({ title: m.title, category: m.parent_category })));
+  // Log available menus and their categories for debugging
+  console.log("All available menus:", menus.map(m => ({ 
+    title: m.title, 
+    category: m.parent_category 
+  })));
   console.log("Selected parent category:", newPage.parent_category);
 
   return (
@@ -108,26 +111,29 @@ const PageForm = ({
           ))}
         </SelectContent>
       </Select>
-      {newPage.parent_category && (
-        <Select
-          value={newPage.menu_id}
-          onValueChange={(value) => {
-            console.log("Menu selected:", value);
-            setNewPage({ ...newPage, menu_id: value });
-          }}
-        >
-          <SelectTrigger className="bg-gray-700">
-            <SelectValue placeholder="Select Menu" />
-          </SelectTrigger>
-          <SelectContent className="bg-gray-800 border-gray-700">
-            {menus.map((menu) => (
-              <SelectItem key={menu.id} value={menu.id} className="text-white hover:bg-gray-700">
-                {menu.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+      <Select
+        value={newPage.menu_id}
+        onValueChange={(value) => {
+          console.log("Menu selected:", value);
+          setNewPage({ ...newPage, menu_id: value });
+        }}
+      >
+        <SelectTrigger className="bg-gray-700">
+          <SelectValue placeholder="Select Menu" />
+        </SelectTrigger>
+        <SelectContent className="bg-gray-800 border-gray-700">
+          {menus.map((menu) => (
+            <SelectItem 
+              key={menu.id} 
+              value={menu.id} 
+              className={`text-white hover:bg-gray-700 ${menu.parent_category ? 'pl-6' : ''}`}
+            >
+              {menu.title}
+              {menu.parent_category && <span className="text-gray-400 ml-2">({menu.parent_category})</span>}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       <Textarea
         placeholder="Page Content"
         value={newPage.content}
