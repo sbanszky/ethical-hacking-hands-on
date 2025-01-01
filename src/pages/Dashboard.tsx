@@ -5,8 +5,11 @@ import PageForm from "@/components/dashboard/PageForm";
 import UserManagement from "@/components/dashboard/UserManagement";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
 import { useContent } from "@/hooks/useContent";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { userRole, isLoading } = useAuthCheck();
   const { 
     menus, 
@@ -18,11 +21,33 @@ const Dashboard = () => {
   } = useContent();
 
   useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log("No session found in Dashboard, redirecting to login");
+        navigate("/login");
+        return;
+      }
+    };
+
+    checkSession();
+    
     if (!isLoading) {
       fetchMenus();
       fetchPages();
     }
-  }, [isLoading, fetchMenus, fetchPages]);
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed in Dashboard:", event, session);
+      if (!session) {
+        navigate("/login");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [isLoading, fetchMenus, fetchPages, navigate]);
 
   if (isLoading) {
     return (

@@ -12,10 +12,10 @@ export const useAuthCheck = () => {
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        console.log("Session check:", session);
+        console.log("Session check in useAuthCheck:", session);
         
         if (!session) {
-          console.log("No session found, redirecting to login");
+          console.log("No session found in useAuthCheck, redirecting to login");
           navigate("/login");
           return;
         }
@@ -42,7 +42,7 @@ export const useAuthCheck = () => {
             .from("profiles")
             .insert([{ 
               id: session.user.id,
-              role: 'reader' // Default role with no edit/delete rights
+              role: 'reader'
             }]);
 
           if (insertError) {
@@ -66,8 +66,8 @@ export const useAuthCheck = () => {
 
     checkAuth();
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed in useAuthCheck:", event, session);
       if (!session) {
         navigate("/login");
       }
