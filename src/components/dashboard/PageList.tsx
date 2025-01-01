@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { GripVertical, Copy, Check } from "lucide-react";
+import { GripVertical, Copy, Check, Pencil } from "lucide-react";
 import { useState } from "react";
 import EditPageDialog from "./EditPageDialog";
-import { Database } from "@/integrations/supabase/types";
+import { Database, Json } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { MarkedSection } from "@/types/marked-sections";
 
@@ -19,6 +19,7 @@ interface PageListProps {
 const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps) => {
   const [draggedItem, setDraggedItem] = useState<any>(null);
   const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
+  const [selectedText, setSelectedText] = useState<{ start: number; end: number } | null>(null);
 
   const handleDragStart = (page: any) => {
     setDraggedItem(page);
@@ -62,6 +63,21 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
     }
   };
 
+  const handleTextSelection = (e: React.MouseEvent<HTMLPreElement>, pageId: string) => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      const range = selection.getRangeAt(0);
+      const preElement = e.currentTarget;
+      const start = range.startOffset;
+      const end = range.endOffset;
+      
+      if (start !== end) {
+        setSelectedText({ start, end });
+        toast.success("Text selected! Click 'Mark Code' to save this section.");
+      }
+    }
+  };
+
   return (
     <div className="space-y-4 mt-4">
       {pages && pages.length > 0 ? (
@@ -100,11 +116,31 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
             </div>
             
             <div className="p-4 space-y-4">
-              {/* Full content preview */}
-              <div className="relative">
-                <pre className="bg-gray-800 text-gray-300 p-4 rounded whitespace-pre-wrap">
+              {/* Content preview with selection capability */}
+              <div className="relative bg-gray-800 rounded-lg p-4">
+                <h3 className="text-sm font-medium mb-2 text-gray-300">Page Content:</h3>
+                <pre
+                  className="text-gray-300 whitespace-pre-wrap cursor-text"
+                  onMouseUp={(e) => handleTextSelection(e, page.id)}
+                >
                   <code>{page.content || 'No content'}</code>
                 </pre>
+                {selectedText && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      const content = page.content?.substring(selectedText.start, selectedText.end);
+                      if (content) {
+                        handleCopySection(content, 0, page.id);
+                      }
+                      setSelectedText(null);
+                    }}
+                  >
+                    Mark Code
+                  </Button>
+                )}
               </div>
 
               {/* Marked sections */}
@@ -112,8 +148,8 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold text-gray-300">Marked Code Sections:</h4>
                   {(page.marked_sections as unknown as MarkedSection[]).map((section, index) => (
-                    <div key={index} className="relative">
-                      <pre className="bg-gray-800 text-gray-300 p-4 rounded whitespace-pre-wrap">
+                    <div key={index} className="relative bg-gray-800 p-4 rounded">
+                      <pre className="text-gray-300 whitespace-pre-wrap">
                         <code>{section.content}</code>
                       </pre>
                       <Button

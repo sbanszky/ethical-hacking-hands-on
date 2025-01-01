@@ -86,6 +86,7 @@ const EditPageDialog = ({ page, menus, onPageUpdated }: EditPageDialogProps) => 
       if (start !== end) {
         setSelectionStart(start);
         setSelectionEnd(end);
+        toast.success("Text selected! Click 'Mark Selected Code' to save this section.");
       }
     }
   };
