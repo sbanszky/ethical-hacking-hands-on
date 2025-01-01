@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { ImagePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import ImageGalleryDialog from "./ImageGalleryDialog";
 
 interface ImageUploadButtonProps {
   onImageUploaded: (markdown: string) => void;
@@ -51,7 +52,7 @@ const ImageUploadButton = ({ onImageUploaded }: ImageUploadButtonProps) => {
   };
 
   return (
-    <div>
+    <div className="flex items-center gap-2">
       <Input
         type="file"
         accept="image/*"
@@ -69,10 +70,11 @@ const ImageUploadButton = ({ onImageUploaded }: ImageUploadButtonProps) => {
         >
           <span>
             <ImagePlus className="h-4 w-4 mr-2" />
-            Add Image
+            Upload Image
           </span>
         </Button>
       </label>
+      <ImageGalleryDialog onImageSelected={onImageUploaded} />
     </div>
   );
 };
