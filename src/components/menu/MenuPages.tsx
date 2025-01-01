@@ -14,7 +14,6 @@ const MenuPages = () => {
 
   console.log("MenuPages - Current menuId:", menuId);
   console.log("MenuPages - Available pages:", pages);
-  console.log("MenuPages - Pages content check:", pages.map(p => ({ id: p.id, title: p.title, content: p.content })));
 
   if (isLoading) {
     return (
@@ -67,29 +66,6 @@ const MenuPages = () => {
                   >
                     <h2 className="text-xl font-semibold mb-2">{page.title}</h2>
                   </Link>
-                  {page.content && (
-                    <div className="mt-4 bg-gray-900 p-6 rounded-lg">
-                      <div className="prose prose-invert max-w-none">
-                        {Array.isArray(page.marked_sections) && (page.marked_sections as unknown as MarkedSection[]).length > 0 ? (
-                          <div className="text-white">
-                            {page.content.split('').map((char, index) => {
-                              const markedSections = (page.marked_sections as unknown as MarkedSection[]) || [];
-                              const isInMarkedSection = markedSections.some(
-                                section => index >= section.start && index < section.end
-                              );
-                              return isInMarkedSection ? (
-                                <span key={index} className="bg-gray-700 font-mono">
-                                  {char}
-                                </span>
-                              ) : char;
-                            })}
-                          </div>
-                        ) : (
-                          <div className="text-white whitespace-pre-wrap">{page.content}</div>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}

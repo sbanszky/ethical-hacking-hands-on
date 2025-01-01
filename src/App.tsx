@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/layout/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import MenuPages from "./components/menu/MenuPages";
+import Page from "./pages/Page";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/menus/:menuId" element={<MenuPages />} />
+            <Route path="/pages/:slug" element={<Page />} />
           </Routes>
         </main>
       </div>
