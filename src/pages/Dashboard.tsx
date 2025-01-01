@@ -16,39 +16,33 @@ const Dashboard = () => {
     fetchPages, 
     handleDeleteMenu, 
     handleDeletePage,
-    isLoading: isContentLoading
+    isLoading: isContentLoading 
   } = useContent();
 
   useEffect(() => {
     if (!isAuthLoading && !user) {
-      console.log("Dashboard: No authenticated user found, redirecting to login");
+      console.log("Dashboard: No authenticated user, redirecting to login");
       navigate("/login");
-      return;
     }
-
-    if (!isAuthLoading && user && userRole) {
-      console.log("Dashboard: Loading content for user:", user.id, "with role:", userRole);
-      Promise.all([fetchMenus(), fetchPages()]);
-    }
-  }, [user, userRole, isAuthLoading, navigate, fetchMenus, fetchPages]);
+  }, [user, isAuthLoading, navigate]);
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen pt-20 bg-hack-background text-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <LoadingSpinner message="Checking authentication..." />
       </div>
     );
   }
 
   if (!user) {
-    return null; // Will redirect in useEffect
+    return null;
   }
 
   const canManageContent = userRole === "admin" || userRole === "editor";
 
   if (!canManageContent) {
     return (
-      <div className="min-h-screen pt-20 bg-hack-background text-white">
+      <div className="min-h-screen pt-20 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
           <p className="text-gray-400">You don't have permission to access this page.</p>
@@ -58,7 +52,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen pt-20 bg-hack-background text-white">
+    <div className="min-h-screen pt-20 bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
         
