@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import EditPageDialog from "./EditPageDialog";
 import { Database } from "@/integrations/supabase/types";
+import { toast } from "sonner";
 
 type Menu = Database['public']['Tables']['menus']['Row'];
 type Page = Database['public']['Tables']['pages']['Row'];
@@ -16,6 +17,7 @@ interface PageListProps {
 
 const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps) => {
   const [draggedItem, setDraggedItem] = useState<any>(null);
+  const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
 
   console.log("PageList received pages:", pages);
 
@@ -46,6 +48,19 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
     if (!menuId) return 'No menu';
     const menu = menus.find(m => m.id === menuId);
     return menu ? menu.title : 'No menu';
+  };
+
+  const handleCopyContent = async (pageId: string, content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedStates({ ...copiedStates, [pageId]: true });
+      toast.success("Content copied to clipboard");
+      setTimeout(() => {
+        setCopiedStates({ ...copiedStates, [pageId]: false });
+      }, 2000);
+    } catch (err) {
+      toast.error("Failed to copy content");
+    }
   };
 
   return (
@@ -86,8 +101,22 @@ const PageList = ({ pages, menus, onDeletePage, onReorderPages }: PageListProps)
                   </Button>
                 </div>
               </div>
-              <div className="p-4 bg-gray-800 text-gray-300 whitespace-pre-wrap min-h-[100px]">
-                {page.content || 'No content'}
+              <div className="relative">
+                <pre className="p-4 bg-gray-800 text-gray-300 whitespace-pre-wrap min-h-[100px] overflow-x-auto">
+                  <code className="block">{page.content || 'No content'}</code>
+                </pre>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => handleCopyContent(page.id, page.content || '')}
+                >
+                  {copiedStates[page.id] ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
             </div>
           );
