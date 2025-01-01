@@ -63,18 +63,33 @@ const MenuPages = () => {
                   >
                     <h2 className="text-xl font-semibold mb-2">{page.title}</h2>
                   </Link>
-                  <div className="mt-4 bg-gray-900 p-6 rounded-lg">
-                    {page.content ? (
+                  {page.content && (
+                    <div className="mt-4 bg-gray-900 p-6 rounded-lg">
                       <div 
                         className="prose prose-invert max-w-none prose-p:text-gray-300"
-                        style={{ whiteSpace: 'pre-wrap' }}
                       >
-                        {page.content}
+                        {page.marked_sections && page.marked_sections.length > 0 ? (
+                          <div>
+                            {page.content.split('').map((char, index) => {
+                              const isInMarkedSection = page.marked_sections.some(
+                                section => index >= section.start && index < section.end
+                              );
+                              if (isInMarkedSection) {
+                                return (
+                                  <span key={index} className="bg-gray-700 font-mono">
+                                    {char}
+                                  </span>
+                                );
+                              }
+                              return char;
+                            })}
+                          </div>
+                        ) : (
+                          <div style={{ whiteSpace: 'pre-wrap' }}>{page.content}</div>
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-gray-500 italic">No content available</p>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
