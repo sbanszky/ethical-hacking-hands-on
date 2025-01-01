@@ -5,6 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+type Menu = Database['public']['Tables']['menus']['Row'];
 
 const PARENT_CATEGORIES = [
   { id: "documentation", title: "Documentation" },
@@ -16,7 +19,7 @@ const PageForm = ({
   menus, 
   onPageCreated 
 }: { 
-  menus: any[];
+  menus: Menu[];
   onPageCreated: () => void;
 }) => {
   const [newPage, setNewPage] = useState({
@@ -61,6 +64,8 @@ const PageForm = ({
     menu.parent_category === newPage.parent_category
   );
 
+  console.log("Available menus for category:", newPage.parent_category, filteredMenus);
+
   return (
     <form onSubmit={handleCreatePage} className="mb-6 space-y-4">
       <Input
@@ -99,7 +104,7 @@ const PageForm = ({
             <SelectValue placeholder="Select Menu" />
           </SelectTrigger>
           <SelectContent>
-            {filteredMenus.map((menu: any) => (
+            {filteredMenus.map((menu) => (
               <SelectItem key={menu.id} value={menu.id}>
                 {menu.title}
               </SelectItem>
