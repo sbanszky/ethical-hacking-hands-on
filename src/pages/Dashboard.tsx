@@ -27,6 +27,7 @@ const Dashboard = () => {
   }, [user, isAuthLoading, navigate]);
 
   if (isAuthLoading) {
+    console.log("Dashboard: Loading authentication state");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <LoadingSpinner message="Checking authentication..." />
@@ -35,12 +36,14 @@ const Dashboard = () => {
   }
 
   if (!user) {
+    console.log("Dashboard: No user found");
     return null;
   }
 
   const canManageContent = userRole === "admin" || userRole === "editor";
 
   if (!canManageContent) {
+    console.log("Dashboard: User doesn't have required permissions");
     return (
       <div className="min-h-screen pt-20 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4">
