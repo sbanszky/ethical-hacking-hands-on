@@ -7,7 +7,9 @@ interface Profile {
   id: string;
   username: string | null;
   role: string;
-  email?: string;
+  user: {
+    email: string;
+  } | null;
 }
 
 const UserManagement = () => {
@@ -20,30 +22,25 @@ const UserManagement = () => {
   }, []);
 
   const fetchProfiles = async () => {
-    console.log("Fetching profiles with emails...");
-    // Join profiles with auth.users to get emails
-    const { data, error } = await supabase
+    console.log("Fetching profiles...");
+    const { data: profilesData, error: profilesError } = await supabase
       .from("profiles")
       .select(`
         *,
-        email:auth_users!inner(email)
+        user:id(
+          email
+        )
       `)
       .order("created_at");
 
-    if (error) {
-      console.error("Error fetching users:", error);
+    if (profilesError) {
+      console.error("Error fetching profiles:", profilesError);
       toast.error("Error fetching users");
       return;
     }
 
-    console.log("Fetched profiles:", data);
-    // Transform the data to match our Profile interface
-    const transformedData = data.map((profile: any) => ({
-      ...profile,
-      email: profile.auth_users?.email
-    }));
-
-    setProfiles(transformedData);
+    console.log("Fetched profiles:", profilesData);
+    setProfiles(profilesData || []);
   };
 
   const getCurrentUserRole = async () => {
@@ -89,7 +86,7 @@ const UserManagement = () => {
       <div className="space-y-4">
         {profiles.map((profile) => (
           <div key={profile.id} className="flex items-center justify-between p-3 bg-gray-700 rounded">
-            <span>{profile.email || "No email available"}</span>
+            <span>{profile.user?.email || "No email available"}</span>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-400">Current role: {profile.role}</span>
               <select
