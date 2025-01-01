@@ -31,7 +31,7 @@ const Dashboard = () => {
     console.log("Auth loading, showing spinner");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <LoadingSpinner size="lg" message="Checking authentication..." />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
