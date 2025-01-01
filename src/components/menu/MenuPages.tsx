@@ -75,12 +75,11 @@ const MenuPages = () => {
                         {Array.isArray(page.marked_sections) && page.marked_sections.length > 0 ? (
                           <div>
                             {page.content.split('').map((char, index) => {
-                              const markedSections = page.marked_sections as MarkedSection[];
-                              const isInMarkedSection = Array.isArray(markedSections) && 
-                                markedSections.some(
-                                  (section) => 
-                                    index >= section.start && index < section.end
-                                );
+                              const markedSections = (page.marked_sections as unknown as MarkedSection[]) || [];
+                              const isInMarkedSection = markedSections.some(
+                                (section) => 
+                                  index >= section.start && index < section.end
+                              );
                               if (isInMarkedSection) {
                                 return (
                                   <span key={index} className="bg-gray-700 font-mono">
