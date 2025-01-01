@@ -39,8 +39,20 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
-            <h1 className="text-white font-mono text-xl">HackNotes</h1>
+            <h1 
+              onClick={() => navigate('/')} 
+              className="text-white font-mono text-xl cursor-pointer"
+            >
+              HackNotes
+            </h1>
             <div className="hidden md:flex items-center gap-4">
+              <Button
+                variant="ghost"
+                className="text-gray-300 hover:text-white"
+                onClick={() => navigate('/dashboard')}
+              >
+                Dashboard
+              </Button>
               {menuItems.map((item) => (
                 <div 
                   key={item.title} 
