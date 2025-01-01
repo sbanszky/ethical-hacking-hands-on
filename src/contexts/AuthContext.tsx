@@ -24,67 +24,60 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    console.log("AuthProvider: Initializing...");
 
     const checkUserRole = async (userId: string) => {
-      try {
-        const { data: profile, error } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", userId)
-          .single();
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
 
-        if (error) {
-          console.error("Error fetching user role:", error);
-          return "";
-        }
-
-        return profile?.role || "";
-      } catch (error) {
-        console.error("Unexpected error checking user role:", error);
+      if (error) {
+        console.error("Error fetching user role:", error);
         return "";
       }
+
+      return profile?.role || "";
     };
 
-    const handleAuthChange = async (session: any) => {
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
-      
+
       if (!session) {
-        console.log("AuthProvider: No session found, clearing state");
         setUser(null);
         setUserRole("");
         setIsLoading(false);
         return;
       }
 
-      try {
-        console.log("AuthProvider: Session found, fetching role");
-        const role = await checkUserRole(session.user.id);
-        
+      setUser(session.user);
+      checkUserRole(session.user.id).then((role) => {
         if (mounted) {
-          setUser(session.user);
           setUserRole(role);
-        }
-      } catch (error) {
-        console.error("Error in handleAuthChange:", error);
-        toast.error("Error checking authentication");
-      } finally {
-        if (mounted) {
           setIsLoading(false);
         }
-      }
-    };
-
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("AuthProvider: Initial session check:", session ? "Session found" : "No session");
-      handleAuthChange(session);
+      });
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("AuthProvider: Auth state changed:", _event);
-      handleAuthChange(session);
+      if (!mounted) return;
+
+      if (!session) {
+        setUser(null);
+        setUserRole("");
+        setIsLoading(false);
+        return;
+      }
+
+      setUser(session.user);
+      checkUserRole(session.user.id).then((role) => {
+        if (mounted) {
+          setUserRole(role);
+          setIsLoading(false);
+        }
+      });
     });
 
     return () => {
