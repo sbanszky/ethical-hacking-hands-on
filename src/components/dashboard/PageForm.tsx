@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
-import { ImagePlus } from "lucide-react";
+import ImageUploadButton from "./ImageUploadButton";
 
 type Menu = Database['public']['Tables']['menus']['Row'];
 
@@ -30,53 +30,6 @@ const PageForm = ({
     menu_id: "",
     parent_category: ""
   });
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
-      return;
-    }
-
-    // Check file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size should be less than 5MB');
-      return;
-    }
-
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { error: uploadError, data } = await supabase.storage
-        .from('images')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('images')
-        .getPublicUrl(filePath);
-
-      // Insert the image URL into the content
-      const imageMarkdown = `![${file.name}](${publicUrl})\n`;
-      setNewPage(prev => ({
-        ...prev,
-        content: prev.content + imageMarkdown
-      }));
-
-      toast.success('Image uploaded successfully');
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Error uploading image');
-    }
-  };
 
   const handleCreatePage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,12 +71,6 @@ const PageForm = ({
     onPageCreated();
   };
 
-  console.log("All available menus:", menus.map(m => ({ 
-    title: m.title, 
-    category: m.parent_category 
-  })));
-  console.log("Selected parent category:", newPage.parent_category);
-
   return (
     <form onSubmit={handleCreatePage} className="mb-6 space-y-4">
       <Input
@@ -143,7 +90,6 @@ const PageForm = ({
       <Select
         value={newPage.parent_category}
         onValueChange={(value) => {
-          console.log("Parent category selected:", value);
           setNewPage({ ...newPage, parent_category: value, menu_id: "" });
         }}
         required
@@ -162,7 +108,6 @@ const PageForm = ({
       <Select
         value={newPage.menu_id}
         onValueChange={(value) => {
-          console.log("Menu selected:", value);
           setNewPage({ ...newPage, menu_id: value });
         }}
       >
@@ -176,10 +121,9 @@ const PageForm = ({
               <SelectItem 
                 key={menu.id} 
                 value={menu.id} 
-                className={`text-white hover:bg-gray-700 ${menu.parent_category ? 'pl-6' : ''}`}
+                className="text-white hover:bg-gray-700"
               >
                 {menu.title}
-                {menu.parent_category && <span className="text-gray-400 ml-2">({menu.parent_category})</span>}
               </SelectItem>
             ))}
         </SelectContent>
@@ -192,24 +136,14 @@ const PageForm = ({
           className="bg-gray-700 min-h-[400px]"
         />
         <div className="absolute top-2 right-2">
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-            id="image-upload"
+          <ImageUploadButton
+            onImageUploaded={(markdown) => {
+              setNewPage(prev => ({
+                ...prev,
+                content: prev.content + markdown
+              }));
+            }}
           />
-          <label htmlFor="image-upload">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="cursor-pointer"
-            >
-              <ImagePlus className="h-4 w-4 mr-2" />
-              Add Image
-            </Button>
-          </label>
         </div>
       </div>
       <Button type="submit" className="w-full">Create Page</Button>

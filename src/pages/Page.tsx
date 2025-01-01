@@ -54,27 +54,45 @@ const Page = () => {
   };
 
   const renderContent = () => {
+    if (!page.content) return null;
+
     const markedSections = page.marked_sections as unknown as MarkedSection[];
+    let content = page.content;
+
+    // Process images with custom formatting
+    content = content.replace(/!\[(.*?)\|(.*?)\]\((.*?)\)/g, (match, alt, options, url) => {
+      const params = new URLSearchParams(options.replace(/\|/g, '&'));
+      const size = params.get('size')?.split('x') || [];
+      const align = params.get('align') || 'center';
+      const width = size[0] || 'auto';
+      const height = size[1] || 'auto';
+
+      return `<img 
+        src="${url}" 
+        alt="${alt}" 
+        style="width: ${width}px; height: ${height}px; display: block; margin: ${align === 'center' ? '0 auto' : '0'};"
+        class="max-w-full h-auto ${align === 'left' ? 'float-left mr-4' : align === 'right' ? 'float-right ml-4' : ''}"
+      />`;
+    });
+
+    // Handle marked sections
     if (!Array.isArray(markedSections) || markedSections.length === 0) {
-      return <div className="text-white whitespace-pre-wrap">{page.content}</div>;
+      return <div className="text-white whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: content }} />;
     }
 
-    // Sort sections by start position to ensure proper order
     const sortedSections = [...markedSections].sort((a, b) => a.start - b.start);
     let lastIndex = 0;
     const contentParts = [];
 
     sortedSections.forEach((section, index) => {
-      // Add text before the marked section
       if (section.start > lastIndex) {
         contentParts.push(
-          <span key={`text-${index}`} className="text-white">
-            {page.content.substring(lastIndex, section.start)}
-          </span>
+          <span key={`text-${index}`} className="text-white" dangerouslySetInnerHTML={{ 
+            __html: content.substring(lastIndex, section.start) 
+          }} />
         );
       }
 
-      // Add the marked section with its copy button
       contentParts.push(
         <div key={`marked-${index}`} className="relative inline-block group">
           <span className="bg-gray-900 px-2 py-1 rounded font-mono text-gray-300">
@@ -104,12 +122,11 @@ const Page = () => {
       lastIndex = section.end;
     });
 
-    // Add any remaining text after the last marked section
-    if (lastIndex < page.content.length) {
+    if (lastIndex < content.length) {
       contentParts.push(
-        <span key="text-end" className="text-white">
-          {page.content.substring(lastIndex)}
-        </span>
+        <span key="text-end" className="text-white" dangerouslySetInnerHTML={{ 
+          __html: content.substring(lastIndex) 
+        }} />
       );
     }
 
