@@ -31,8 +31,14 @@ const UserManagement = () => {
       return;
     }
 
+    if (!profilesData) {
+      console.log("No profiles found");
+      setProfiles([]);
+      return;
+    }
+
     console.log("Fetched profiles:", profilesData);
-    setProfiles(profilesData || []);
+    setProfiles(profilesData as Profile[]);
   };
 
   if (currentUserRole !== "admin") {
