@@ -88,7 +88,7 @@ const Sidebar = () => {
   console.log("Sidebar menus:", menus);
   console.log("Sidebar pages:", pages);
 
-  // First, group menus by parent_category
+  // First, organize menus by category
   const menusByCategory = (menus || []).reduce((acc: Record<string, Menu[]>, menu: Menu) => {
     const category = menu.parent_category || 'uncategorized';
     if (!acc[category]) {
@@ -100,15 +100,21 @@ const Sidebar = () => {
 
   console.log("Menus grouped by category:", menusByCategory);
 
-  // Create menu items structure
+  // Create menu items structure with proper hierarchy
   const menuItems: MenuItem[] = Object.entries(menusByCategory).map(([category, categoryMenus]) => {
     console.log(`Processing category: ${category} with menus:`, categoryMenus);
     
+    // Sort menus by order_index
+    const sortedMenus = [...categoryMenus].sort((a, b) => a.order_index - b.order_index);
+    
     // Map the menus for this category
-    const menuChildren = categoryMenus.map(menu => {
+    const menuChildren = sortedMenus.map(menu => {
       // Find pages for this menu
       const menuPages = pages?.filter(page => page.menu_id === menu.id) || [];
       console.log(`Menu ${menu.title} (${menu.id}) has pages:`, menuPages);
+
+      // Sort pages by order_index
+      const sortedPages = [...menuPages].sort((a, b) => a.order_index - b.order_index);
 
       return {
         id: menu.id,
@@ -116,7 +122,7 @@ const Sidebar = () => {
         icon: <File className="h-4 w-4" />,
         type: 'menu' as const,
         parent_category: menu.parent_category,
-        children: menuPages.map(page => ({
+        children: sortedPages.map(page => ({
           id: page.id,
           title: page.title,
           icon: <File className="h-4 w-4" />,
