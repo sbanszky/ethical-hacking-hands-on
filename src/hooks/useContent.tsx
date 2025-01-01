@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -7,22 +7,36 @@ export const useContent = () => {
   const [pages, setPages] = useState([]);
 
   const fetchMenus = useCallback(async () => {
-    const { data, error } = await supabase.from("menus").select("*").order("order_index");
+    console.log("Fetching menus...");
+    const { data, error } = await supabase
+      .from("menus")
+      .select("*")
+      .order("order_index");
+    
     if (error) {
       console.error("Error fetching menus:", error);
       toast.error("Error fetching menus");
       return;
     }
+    
+    console.log("Menus fetched:", data);
     setMenus(data);
   }, []);
 
   const fetchPages = useCallback(async () => {
-    const { data, error } = await supabase.from("pages").select("*").order("order_index");
+    console.log("Fetching pages...");
+    const { data, error } = await supabase
+      .from("pages")
+      .select("*")
+      .order("order_index");
+    
     if (error) {
       console.error("Error fetching pages:", error);
       toast.error("Error fetching pages");
       return;
     }
+    
+    console.log("Pages fetched:", data);
     setPages(data);
   }, []);
 
@@ -57,6 +71,13 @@ export const useContent = () => {
     toast.success("Page deleted");
     fetchPages();
   }, [fetchPages]);
+
+  // Initial fetch when the hook is mounted
+  useEffect(() => {
+    console.log("useContent hook mounted, fetching initial data...");
+    fetchMenus();
+    fetchPages();
+  }, [fetchMenus, fetchPages]);
 
   return {
     menus,

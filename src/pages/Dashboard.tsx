@@ -9,7 +9,7 @@ import ContentManager from "@/components/dashboard/ContentManager";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { userRole, isLoading } = useAuthCheck();
+  const { userRole, isLoading: isAuthLoading } = useAuthCheck();
   const { 
     menus, 
     pages, 
@@ -20,6 +20,7 @@ const Dashboard = () => {
   } = useContent();
 
   useEffect(() => {
+    console.log("Dashboard mounting, checking session...");
     const checkSession = async () => {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
@@ -35,16 +36,14 @@ const Dashboard = () => {
         navigate("/login");
         return;
       }
+
+      console.log("Session found, fetching content...");
+      fetchMenus();
+      fetchPages();
     };
 
     checkSession();
     
-    if (!isLoading) {
-      console.log("Fetching menus and pages...");
-      fetchMenus();
-      fetchPages();
-    }
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed in Dashboard:", event, session);
       if (event === 'SIGNED_OUT' || !session) {
@@ -56,9 +55,9 @@ const Dashboard = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [isLoading, fetchMenus, fetchPages, navigate]);
+  }, [fetchMenus, fetchPages, navigate]);
 
-  if (isLoading) {
+  if (isAuthLoading) {
     return (
       <div className="min-h-screen pt-20 bg-hack-background text-white flex items-center justify-center">
         <div className="text-center">
